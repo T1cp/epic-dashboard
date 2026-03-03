@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synced Epic OS</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK (Real-time Database) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        :root {
+            --primary: #7cb342; --primary-light: #aed581; --primary-dark: #558b2f;
+            --bg-color: #f4f7f6; --card-bg: #ffffff; --text-main: #333333;
+            --text-muted: #777777; --border-color: #e0e0e0; --danger: #e53935;
+            --xp-color: #9c27b0;
+        }
+        body.dark-mode {
+            --bg-color: #121212; --card-bg: #1e1e1e; --text-main: #e0e0e0;
+            --text-muted: #a0a0a0; --border-color: #333333;
+            --primary: #8bc34a; --primary-light: #558b2f;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; transition: 0.3s; }
+
+        /* Header & Profile Switcher */
+        header { background: var(--card-bg); padding: 15px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .nav-tabs { display: flex; gap: 5px; }
+        .tab-btn { padding: 10px 15px; border: none; background: transparent; font-size: 15px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        
+        .profile-switcher { display: flex; align-items: center; gap: 10px; background: var(--bg-color); padding: 5px; border-radius: 8px; border: 2px solid var(--primary); }
+        .profile-btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: transparent; color: var(--text-muted); }
+        .profile-btn.active { background: var(--primary); color: white; }
+
+        .controls { display: flex; align-items: center; gap: 10px; }
+        .controls button, .controls input[type="month"] { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 600; background: var(--card-bg); color: var(--text-main); }
+        
+        /* Gamification */
+        .level-badge { display: flex; align-items: center; gap: 10px; background: var(--bg-color); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--border-color); }
+        .xp-bar-container { width: 100px; height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden; }
+        .xp-bar-fill { height: 100%; background: var(--xp-color); width: 0%; transition: width 0.5s ease-out; }
+        .level-text { font-weight: 700; color: var(--xp-color); font-size: 14px; }
+
+        /* Layout */
+        .container { padding: 20px 30px; max-width: 1600px; margin: 0 auto; }
+        .page { display: none; } .page.active { display: block; animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .card-header { background: var(--primary); color: white; padding: 10px 15px; border-radius: 8px 8px 0 0; margin: -20px -20px 20px -20px; font-weight: 600; text-align: center; }
+
+        /* Inputs */
+        .btn-icon { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; }
+        .btn-icon:hover { color: var(--danger); }
+        .btn-add { width: 100%; padding: 8px; background: transparent; border: 1px dashed var(--border-color); border-radius: 6px; cursor: pointer; color: var(--text-muted); margin-top: 10px; font-weight: 600; }
+        input[type="checkbox"] { appearance: none; width: 18px; height: 18px; border: 2px solid var(--border-color); border-radius: 4px; cursor: pointer; position: relative; }
+        input[type="checkbox"]:checked { background-color: var(--primary); border-color: var(--primary); }
+        input[type="checkbox"]:checked::after { content: '\f00c'; font-family: 'FontAwesome'; color: white; font-size: 12px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .editable { padding: 4px; border-radius: 4px; border: 1px solid transparent; min-width: 20px; display: inline-block; }
+        .editable:hover, .editable:focus { border-color: var(--primary); background: var(--bg-color); outline: none; }
+
+        /* Tables & Grids */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .data-table th, .data-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); text-align: left; }
+        .data-table th { background: var(--bg-color); color: var(--text-muted); }
+        .status-badge { padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; outline: none; cursor: pointer; }
+        .s-not-started { background: #fff3e0; color: #e65100; } .s-in-progress { background: #e3f2fd; color: #1565c0; } .s-done { background: #e8f5e9; color: #2e7d32; }
+        
+        .weekly-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 15px; }
+        .day-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; }
+        .day-header { background: var(--primary-light); color: white; text-align: center; padding: 10px; font-weight: 600; border-radius: 8px 8px 0 0; }
+        .task-list-mini { list-style: none; font-size: 12px; padding: 10px; flex-grow: 1; }
+        .task-list-mini li { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--bg-color); gap: 5px; }
+        .task-list-mini li.done .task-text { text-decoration: line-through; color: var(--text-muted); }
+        .task-text { flex-grow: 1; word-break: break-word; }
+
+        /* Sync Indicator */
+        #syncStatus { font-size: 12px; font-weight: bold; color: var(--text-muted); margin-right: 15px; }
+        .syncing { color: #fdd835 !important; }
+        .synced { color: var(--primary) !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('tasks')"><i class="fas fa-tasks"></i> Tasks</button>
+            <button class="tab-btn" onclick="switchTab('goals')"><i class="fas fa-bullseye"></i> Goals</button>
+        </div>
+        
+        <div class="profile-switcher">
+            <button class="profile-btn active" id="btn-user1" onclick="switchProfile('user1')">🇺🇸 My Profile (OKC)</button>
+            <button class="profile-btn" id="btn-user2" onclick="switchProfile('user2')">🇺🇦 Friend (Kharkiv)</button>
+        </div>
+
+        <div class="controls">
+            <span id="syncStatus" class="synced"><i class="fas fa-cloud"></i> Synced</span>
+            <div class="level-badge">
+                <i class="fas fa-star" style="color: var(--xp-color);"></i>
+                <span class="level-text" id="levelDisplay">Lvl 1</span>
+                <div class="xp-bar-container"><div class="xp-bar-fill" id="xpBar"></div></div>
+            </div>
+            <input type="month" id="monthSelector" onchange="changeMonth(this.value)">
+            <button onclick="toggleDarkMode()"><i class="fas fa-moon"></i></button>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="page active">
+            <div class="card">
+                <div class="card-header">Daily Routine & Habits</div>
+                <table class="data-table" style="margin-bottom: 20px;">
+                    <thead><tr><th>Habit</th><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th></th></tr></thead>
+                    <tbody id="habitTableBody"></tbody>
+                </table>
+                <button class="btn-add" onclick="addHabit()">+ Add Habit</button>
+            </div>
+            <div class="weekly-grid" id="weeklyGrid"></div>
+        </div>
+
+        <!-- TASKS -->
+        <div id="tasks" class="page">
+            <div class="card">
+                <div class="card-header">Master Task List</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"></th>
+                            <th>Task Name</th>
+                            <th>Due Date</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th title="Set how often this task repeats">🔁 Repeat</th>
+                            <th style="width: 40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="taskListBody"></tbody>
+                </table>
+                <button class="btn-add" onclick="addNewMainTask()">+ Add New Task</button>
+            </div>
+        </div>
+
+        <!-- GOALS -->
+        <div id="goals" class="page">
+            <div class="card">
+                <div class="card-header">Long-Term Goals</div>
+                <table class="data-table"><tbody id="goalsTableBody"></tbody></table>
+                <button class="btn-add" onclick="addGoal()">+ Add Goal</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ==========================================
+        // FIREBASE CONFIGURATION (From your screenshot!)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCDc6zQJtjM6qjFZtkNpQDI0QbZDzOpDR4",
+            authDomain: "coolpopswebsite.firebaseapp.com",
+            databaseURL: "https://coolpopswebsite-default-rtdb.firebaseio.com",
+            projectId: "coolpopswebsite",
+            storageBucket: "coolpopswebsite.firebasestorage.app",
+            messagingSenderId: "841625716847",
+            appId: "1:841625716847:web:d70b476cce6fd1f5ee659a",
+            measurementId: "G-2JTX8J44FW"
+        };
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.database();
+
+        // ==========================================
+        // APP LOGIC & SYNCING
+        // ==========================================
+        let currentProfile = 'user1'; // 'user1' (OKC) or 'user2' (Kharkiv)
+        let currentPeriod = ""; 
+        let isTyping = false; // Prevents overwriting while typing
+
+        const getEmptyData = () => ({
+            settings: { darkMode: false, xp: 0, level: 1 },
+            months: {}
+        });
+
+        const getEmptyMonth = () => ({
+            habits:[ { name: "Drink Water", days:[false, false, false, false, false, false, false] } ],
+            weekDays:[
+                { name: "Sunday", tasks: [] }, { name: "Monday", tasks:[] }, { name: "Tuesday", tasks: [] },
+                { name: "Wednesday", tasks:[] }, { name: "Thursday", tasks:[] }, { name: "Friday", tasks:[] }, { name: "Saturday", tasks:[] }
+            ],
+            taskList: [],
+            goals:[]
+        });
+
+        let localData = getEmptyData();
+        let appData = null; // Points to localData.months[currentPeriod]
+
+        // --- FIREBASE REAL-TIME LISTENER ---
+        function listenToCloud() {
+            document.getElementById('syncStatus').className = 'syncing';
+            document.getElementById('syncStatus').innerHTML = '<i class="fas fa-sync fa-spin"></i> Syncing...';
+
+            db.ref('profiles/' + currentProfile).on('value', (snapshot) => {
+                if (isTyping) return; // Don't update UI if user is currently typing
+                
+                const data = snapshot.val();
+                if (data) {
+                    localData = data;
+                } else {
+                    localData = getEmptyData(); // First time setup
+                }
+                
+                applySettings();
+                ensureMonthExists(currentPeriod);
+                renderAll();
+
+                document.getElementById('syncStatus').className = 'synced';
+                document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> Synced';
+            });
+        }
+
+        // --- PUSH TO CLOUD ---
+        function saveToCloud() {
+            document.getElementById('syncStatus').className = 'syncing';
+            document.getElementById('syncStatus').innerHTML = '<i class="fas fa-arrow-up"></i> Saving...';
+            
+            db.ref('profiles/' + currentProfile).set(localData).then(() => {
+                document.getElementById('syncStatus').className = 'synced';
+                document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> Synced';
+            });
+        }
+
+        // --- PROFILE SWITCHER ---
+        function switchProfile(profileId) {
+            currentProfile = profileId;
+            document.querySelectorAll('.profile-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + profileId).classList.add('active');
+            
+            // Stop listening to old profile, start listening to new one
+            db.ref().off(); 
+            listenToCloud();
+        }
+
+        // --- INITIALIZATION ---
+        function initApp() {
+            const today = new Date();
+            currentPeriod = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+            document.getElementById('monthSelector').value = currentPeriod;
+            
+            listenToCloud(); // Starts the real-time sync
+        }
+
+        function ensureMonthExists(monthStr) {
+            if (!localData.months) localData.months = {};
+            if (!localData.months[monthStr]) {
+                localData.months[monthStr] = getEmptyMonth();
+                saveToCloud();
+            }
+            appData = localData.months[monthStr];
+        }
+
+        function changeMonth(newMonthStr) {
+            if (!newMonthStr) return;
+            currentPeriod = newMonthStr;
+            ensureMonthExists(currentPeriod);
+            renderAll();
+        }
+
+        function applySettings() {
+            if (localData.settings.darkMode) document.body.classList.add('dark-mode');
+            else document.body.classList.remove('dark-mode');
+            
+            let xpNeeded = localData.settings.level * 100;
+            let percent = (localData.settings.xp / xpNeeded) * 100;
+            document.getElementById('levelDisplay').innerText = `Lvl ${localData.settings.level}`;
+            document.getElementById('xpBar').style.width = `${percent}%`;
+        }
+
+        function toggleDarkMode() {
+            localData.settings.darkMode = !localData.settings.darkMode;
+            saveToCloud();
+            applySettings();
+        }
+
+        function gainXP(amount) {
+            localData.settings.xp += amount;
+            let xpNeeded = localData.settings.level * 100;
+            if (localData.settings.xp >= xpNeeded) {
+                localData.settings.xp -= xpNeeded;
+                localData.settings.level++;
+                alert(`🎉 LEVEL UP! ${currentProfile} is now Level ${localData.settings.level}!`);
+            }
+            saveToCloud();
+        }
+
+        // --- TYPING HANDLERS (Prevents sync glitches) ---
+        function startTyping() { isTyping = true; }
+        function stopTyping() { isTyping = false; saveToCloud(); }
+
+        // --- RENDER FUNCTIONS ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function renderAll() {
+            renderDashboard();
+            renderTaskList();
+            renderGoals();
+        }
+
+        // 1. DASHBOARD
+        function renderDashboard() {
+            if(!appData.habits) appData.habits =[];
+            document.getElementById('habitTableBody').innerHTML = appData.habits.map((habit, hIndex) => `
+                <tr>
+                    <td><span class="editable" contenteditable="true" onfocus="startTyping()" onblur="updateHabitName(${hIndex}, this.innerText); stopTyping()">${habit.name}</span></td>
+                    ${habit.days.map((day, dIndex) => `<td><input type="checkbox" ${day ? 'checked' : ''} onchange="toggleHabit(${hIndex}, ${dIndex})"></td>`).join('')}
+                    <td><button class="btn-icon" onclick="deleteHabit(${hIndex})"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('');
+
+            if(!appData.weekDays) appData.weekDays = getEmptyMonth().weekDays;
+            document.getElementById('weeklyGrid').innerHTML = appData.weekDays.map((day, dIndex) => {
+                let tasksHTML = (day.tasks ||[]).map((t, tIndex) => `
+                    <li class="${t.done ? 'done' : ''}">
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleDayTask(${dIndex}, ${tIndex})">
+                        <span class="editable task-text" contenteditable="true" onfocus="startTyping()" onblur="updateDayTaskName(${dIndex}, ${tIndex}, this.innerText); stopTyping()">${t.name}</span>
+                        <button class="btn-icon" onclick="deleteDayTask(${dIndex}, ${tIndex})"><i class="fas fa-times"></i></button>
+                    </li>
+                `).join('');
+
+                return `
+                    <div class="day-card">
+                        <div class="day-header">${day.name}</div>
+                        <ul class="task-list-mini">${tasksHTML}</ul>
+                        <div style="padding: 10px;"><button class="btn-add" style="margin:0;" onclick="addDayTask(${dIndex})">+ Add</button></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addHabit() { appData.habits.push({ name: "New Habit", days:[false,false,false,false,false,false,false] }); saveToCloud(); }
+        function deleteHabit(i) { appData.habits.splice(i, 1); saveToCloud(); }
+        function updateHabitName(i, name) { appData.habits[i].name = name; }
+        function toggleHabit(h, d) { appData.habits[h].days[d] = !appData.habits[h].days[d]; if(appData.habits[h].days[d]) gainXP(5); saveToCloud(); }
+        
+        function addDayTask(d) { if(!appData.weekDays[d].tasks) appData.weekDays[d].tasks=[]; appData.weekDays[d].tasks.push({ name: "Task", done: false }); saveToCloud(); }
+        function deleteDayTask(d, t) { appData.weekDays[d].tasks.splice(t, 1); saveToCloud(); }
+        function updateDayTaskName(d, t, name) { appData.weekDays[d].tasks[t].name = name; }
+        function toggleDayTask(d, t) { appData.weekDays[d].tasks[t].done = !appData.weekDays[d].tasks[t].done; if(appData.weekDays[d].tasks[t].done) gainXP(10); saveToCloud(); }
+
+        // 2. TASKS (WITH REPEAT FEATURE)
+        function renderTaskList() {
+            if(!appData.taskList) appData.taskList =[];
+            document.getElementById('taskListBody').innerHTML = appData.taskList.map((task, index) => `
+                <tr style="${task.done ? 'opacity: 0.5;' : ''}">
+                    <td><input type="checkbox" ${task.done ? 'checked' : ''} onchange="toggleMainTask(${index})"></td>
+                    <td style="${task.done ? 'text-decoration: line-through;' : ''}" class="editable" contenteditable="true" onfocus="startTyping()" onblur="updateMainTask(${index}, 'name', this.innerText); stopTyping()">${task.name}</td>
+                    <td class="editable" contenteditable="true" onfocus="startTyping()" onblur="updateMainTask(${index}, 'due', this.innerText); stopTyping()">${task.due || 'DD/MM'}</td>
+                    <td>
+                        <select onchange="updateMainTask(${index}, 'priority', this.value); saveToCloud()" style="border:none; background:transparent; cursor:pointer; color:var(--text-main);">
+                            <option value="high" ${task.priority==='high'?'selected':''}>🔴 High</option>
+                            <option value="medium" ${task.priority==='medium'?'selected':''}>🟡 Medium</option>
+                            <option value="low" ${task.priority==='low'?'selected':''}>🔵 Low</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="status-badge s-${task.status}" onchange="updateMainTask(${index}, 'status', this.value); saveToCloud()">
+                            <option value="not-started" ${task.status==='not-started'?'selected':''}>Not Started</option>
+                            <option value="in-progress" ${task.status==='in-progress'?'selected':''}>In Progress</option>
+                            <option value="done" ${task.status==='done'?'selected':''}>Done</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select onchange="updateMainTask(${index}, 'repeat', this.value); saveToCloud()" style="border:1px solid var(--border-color); border-radius:4px; padding:4px; background:var(--bg-color); color:var(--text-main);">
+                            <option value="none" ${task.repeat==='none'?'selected':''}>No Repeat</option>
+                            <option value="daily" ${task.repeat==='daily'?'selected':''}>Daily</option>
+                            <option value="weekly" ${task.repeat==='weekly'?'selected':''}>Weekly</option>
+                            <option value="monthly" ${task.repeat==='monthly'?'selected':''}>Monthly</option>
+                        </select>
+                    </td>
+                    <td><button class="btn-icon" onclick="deleteMainTask(${index})"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('');
+        }
+
+        function addNewMainTask() { appData.taskList.push({ name: "New Task", due: "", priority: "medium", status: "not-started", done: false, repeat: "none" }); saveToCloud(); }
+        function deleteMainTask(index) { appData.taskList.splice(index, 1); saveToCloud(); }
+        function toggleMainTask(index) { 
+            appData.taskList[index].done = !appData.taskList[index].done; 
+            appData.taskList[index].status = appData.taskList[index].done ? 'done' : 'not-started';
+            if(appData.taskList[index].done) gainXP(15);
+            saveToCloud(); 
+        }
+        function updateMainTask(index, field, val) { 
+            appData.taskList[index][field] = val; 
+            if(field === 'status') appData.taskList[index].done = (val === 'done');
+        }
+
+        // 3. GOALS
+        function renderGoals() {
+            if(!appData.goals) appData.goals =[];
+            document.getElementById('goalsTableBody').innerHTML = appData.goals.map((g, i) => `
+                <tr style="${g.done ? 'opacity: 0.5;' : ''}">
+                    <td style="width: 30px;"><input type="checkbox" ${g.done ? 'checked' : ''} onchange="toggleGoal(${i})"></td>
+                    <td style="${g.done ? 'text-decoration: line-through;' : ''}" class="editable" contenteditable="true" onfocus="startTyping()" onblur="updateGoal(${i}, this.innerText); stopTyping()">${g.text}</td>
+                    <td style="width: 40px;"><button class="btn-icon" onclick="deleteGoal(${i})"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('');
+        }
+        function addGoal() { appData.goals.push({ text: "New Goal", done: false }); saveToCloud(); }
+        function deleteGoal(i) { appData.goals.splice(i, 1); saveToCloud(); }
+        function updateGoal(i, val) { appData.goals[i].text = val; }
+        function toggleGoal(i) { appData.goals[i].done = !appData.goals[i].done; if(appData.goals[i].done) gainXP(50); saveToCloud(); }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
