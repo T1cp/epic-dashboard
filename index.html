@@ -3,86 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synced Epic OS</title>
+    <title>Epic OS V3 - Synced</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDK (Real-time Database) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         :root {
-            --primary: #7cb342; --primary-light: #aed581; --primary-dark: #558b2f;
-            --bg-color: #f4f7f6; --card-bg: #ffffff; --text-main: #333333;
-            --text-muted: #777777; --border-color: #e0e0e0; --danger: #e53935;
-            --xp-color: #9c27b0;
+            --primary: #6366f1; --primary-light: #818cf8; --primary-dark: #4f46e5;
+            --bg-color: #f8fafc; --card-bg: #ffffff; --text-main: #0f172a;
+            --text-muted: #64748b; --border-color: #e2e8f0; --danger: #ef4444;
+            --success: #22c55e; --warning: #f59e0b; --xp-color: #d946ef;
+            --glass-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
         }
         body.dark-mode {
-            --bg-color: #121212; --card-bg: #1e1e1e; --text-main: #e0e0e0;
-            --text-muted: #a0a0a0; --border-color: #333333;
-            --primary: #8bc34a; --primary-light: #558b2f;
+            --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc;
+            --text-muted: #94a3b8; --border-color: #334155;
+            --primary: #818cf8; --primary-light: #6366f1;
+            --glass-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; transition: 0.3s; }
+        body { background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; transition: background-color 0.3s, color 0.3s; }
 
         /* Header & Profile Switcher */
-        header { background: var(--card-bg); padding: 15px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .nav-tabs { display: flex; gap: 5px; }
-        .tab-btn { padding: 10px 15px; border: none; background: transparent; font-size: 15px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: 0.3s; }
-        .tab-btn.active { background: var(--primary); color: white; }
+        header { 
+            background: var(--card-bg); padding: 15px 30px; box-shadow: var(--glass-shadow); 
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .nav-tabs { display: flex; gap: 8px; }
+        .tab-btn { padding: 10px 18px; border: none; background: transparent; font-size: 15px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        .tab-btn:hover { background: var(--bg-color); color: var(--primary); }
+        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
         
-        .profile-switcher { display: flex; align-items: center; gap: 10px; background: var(--bg-color); padding: 5px; border-radius: 8px; border: 2px solid var(--primary); }
-        .profile-btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: transparent; color: var(--text-muted); }
-        .profile-btn.active { background: var(--primary); color: white; }
+        .profile-switcher { display: flex; align-items: center; gap: 5px; background: var(--bg-color); padding: 6px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .profile-btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; background: transparent; color: var(--text-muted); transition: 0.3s; }
+        .profile-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid var(--primary-light); }
 
-        .controls { display: flex; align-items: center; gap: 10px; }
-        .controls button, .controls input[type="month"] { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 600; background: var(--card-bg); color: var(--text-main); }
+        /* Live Clock Widget */
+        .clock-widget {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            color: white; padding: 8px 16px; border-radius: 10px; font-weight: 700;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); min-width: 160px; text-align: center;
+        }
+        .clock-time { font-size: 18px; letter-spacing: 1px; }
+        .clock-date { font-size: 11px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .controls { display: flex; align-items: center; gap: 12px; }
+        .controls button, .controls input[type="month"] { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-weight: 600; background: var(--card-bg); color: var(--text-main); transition: 0.2s; }
+        .controls button:hover { background: var(--bg-color); }
         
         /* Gamification */
-        .level-badge { display: flex; align-items: center; gap: 10px; background: var(--bg-color); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--border-color); }
+        .level-badge { display: flex; align-items: center; gap: 10px; background: var(--bg-color); padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border-color); }
         .xp-bar-container { width: 100px; height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden; }
-        .xp-bar-fill { height: 100%; background: var(--xp-color); width: 0%; transition: width 0.5s ease-out; }
-        .level-text { font-weight: 700; color: var(--xp-color); font-size: 14px; }
+        .xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--xp-color), #f472b6); width: 0%; transition: width 0.5s ease-out; }
+        .level-text { font-weight: 800; color: var(--xp-color); font-size: 14px; }
 
-        /* Layout */
-        .container { padding: 20px 30px; max-width: 1600px; margin: 0 auto; }
+        /* Layout & Cards */
+        .container { padding: 30px; max-width: 1600px; margin: 0 auto; }
         .page { display: none; } .page.active { display: block; animation: fadeIn 0.4s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
-        .card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); }
-        .card-header { background: var(--primary); color: white; padding: 10px 15px; border-radius: 8px 8px 0 0; margin: -20px -20px 20px -20px; font-weight: 600; text-align: center; }
+        .card { background: var(--card-bg); border-radius: 16px; box-shadow: var(--glass-shadow); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); transition: 0.3s; }
+        .card:hover { box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1); }
+        .card-header { background: transparent; color: var(--text-main); padding-bottom: 15px; margin-bottom: 20px; font-weight: 700; font-size: 18px; border-bottom: 2px solid var(--bg-color); display: flex; justify-content: space-between; align-items: center; }
 
-        /* Inputs */
-        .btn-icon { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; }
-        .btn-icon:hover { color: var(--danger); }
-        .btn-add { width: 100%; padding: 8px; background: transparent; border: 1px dashed var(--border-color); border-radius: 6px; cursor: pointer; color: var(--text-muted); margin-top: 10px; font-weight: 600; }
-        input[type="checkbox"] { appearance: none; width: 18px; height: 18px; border: 2px solid var(--border-color); border-radius: 4px; cursor: pointer; position: relative; }
-        input[type="checkbox"]:checked { background-color: var(--primary); border-color: var(--primary); }
+        /* Inputs & Checkboxes */
+        .btn-icon { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; transition: 0.2s; }
+        .btn-icon:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+        .btn-add { width: 100%; padding: 10px; background: var(--bg-color); border: 1px dashed var(--border-color); border-radius: 8px; cursor: pointer; color: var(--text-muted); margin-top: 15px; font-weight: 600; transition: 0.2s; }
+        .btn-add:hover { border-color: var(--primary); color: var(--primary); background: rgba(99, 102, 241, 0.05); }
+        
+        /* The Missed System Checkboxes */
+        input[type="checkbox"] { appearance: none; width: 20px; height: 20px; border: 2px solid var(--border-color); border-radius: 6px; cursor: pointer; position: relative; transition: 0.2s; background: var(--card-bg); }
+        input[type="checkbox"]:checked { background-color: var(--success); border-color: var(--success); }
         input[type="checkbox"]:checked::after { content: '\f00c'; font-family: 'FontAwesome'; color: white; font-size: 12px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .editable { padding: 4px; border-radius: 4px; border: 1px solid transparent; min-width: 20px; display: inline-block; }
+        
+        /* MISSED STYLING */
+        input[type="checkbox"].missed { border-color: var(--danger); background-color: rgba(239, 68, 68, 0.15); animation: pulseRed 2s infinite; }
+        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        .missed-text { color: var(--danger) !important; font-weight: 600; }
+
+        .editable { padding: 6px; border-radius: 6px; border: 1px solid transparent; min-width: 30px; display: inline-block; transition: 0.2s; }
         .editable:hover, .editable:focus { border-color: var(--primary); background: var(--bg-color); outline: none; }
 
         /* Tables & Grids */
         .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        .data-table th, .data-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); text-align: left; }
-        .data-table th { background: var(--bg-color); color: var(--text-muted); }
-        .status-badge { padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; outline: none; cursor: pointer; }
-        .s-not-started { background: #fff3e0; color: #e65100; } .s-in-progress { background: #e3f2fd; color: #1565c0; } .s-done { background: #e8f5e9; color: #2e7d32; }
+        .data-table th, .data-table td { padding: 14px 12px; border-bottom: 1px solid var(--border-color); text-align: left; }
+        .data-table th { background: var(--bg-color); color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        .data-table tr:hover { background: rgba(0,0,0,0.01); }
+        
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; border: none; outline: none; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+        .s-not-started { background: rgba(245, 158, 11, 0.15); color: var(--warning); } 
+        .s-in-progress { background: rgba(99, 102, 241, 0.15); color: var(--primary); } 
+        .s-done { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .s-overdue { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
         
         .weekly-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 15px; }
-        .day-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; }
-        .day-header { background: var(--primary-light); color: white; text-align: center; padding: 10px; font-weight: 600; border-radius: 8px 8px 0 0; }
-        .task-list-mini { list-style: none; font-size: 12px; padding: 10px; flex-grow: 1; }
-        .task-list-mini li { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--bg-color); gap: 5px; }
+        .day-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+        .day-header { background: var(--bg-color); color: var(--text-main); text-align: center; padding: 12px; font-weight: 700; border-bottom: 1px solid var(--border-color); }
+        .day-header.is-today { background: var(--primary); color: white; }
+        .task-list-mini { list-style: none; font-size: 13px; padding: 12px; flex-grow: 1; }
+        .task-list-mini li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--bg-color); gap: 8px; }
         .task-list-mini li.done .task-text { text-decoration: line-through; color: var(--text-muted); }
         .task-text { flex-grow: 1; word-break: break-word; }
 
+        /* Finances */
+        .finance-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+        .fin-box { background: var(--bg-color); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; }
+        .fin-box h3 { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .fin-box .val { font-size: 28px; font-weight: 800; color: var(--text-main); }
+        .val.positive { color: var(--success); } .val.negative { color: var(--danger); }
+
+        .savings-goal-container { background: var(--bg-color); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 24px; }
+        .savings-bar-bg { width: 100%; height: 12px; background: var(--border-color); border-radius: 6px; overflow: hidden; margin-top: 10px; }
+        .savings-bar-fill { height: 100%; background: linear-gradient(90deg, var(--success), #4ade80); width: 0%; transition: 1s ease-out; }
+
         /* Sync Indicator */
-        #syncStatus { font-size: 12px; font-weight: bold; color: var(--text-muted); margin-right: 15px; }
-        .syncing { color: #fdd835 !important; }
-        .synced { color: var(--primary) !important; }
+        #syncStatus { font-size: 12px; font-weight: bold; color: var(--text-muted); margin-right: 15px; background: var(--bg-color); padding: 6px 12px; border-radius: 20px; }
+        .syncing { color: var(--warning) !important; }
+        .synced { color: var(--success) !important; }
     </style>
 </head>
 <body>
@@ -91,15 +136,20 @@
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</button>
             <button class="tab-btn" onclick="switchTab('tasks')"><i class="fas fa-tasks"></i> Tasks</button>
+            <button class="tab-btn" onclick="switchTab('finances')"><i class="fas fa-wallet"></i> Finances</button>
             <button class="tab-btn" onclick="switchTab('goals')"><i class="fas fa-bullseye"></i> Goals</button>
         </div>
         
         <div class="profile-switcher">
-            <button class="profile-btn active" id="btn-user1" onclick="switchProfile('user1')">🇺🇸 My Profile (OKC)</button>
-            <button class="profile-btn" id="btn-user2" onclick="switchProfile('user2')">🇺🇦 Friend (Kharkiv)</button>
+            <button class="profile-btn active" id="btn-user1" onclick="switchProfile('user1')">🇺🇸 OKC</button>
+            <button class="profile-btn" id="btn-user2" onclick="switchProfile('user2')">🇺🇦 Kharkiv</button>
         </div>
 
         <div class="controls">
+            <div class="clock-widget">
+                <div class="clock-time" id="clockTime">00:00:00</div>
+                <div class="clock-date" id="clockDate">Loading...</div>
+            </div>
             <span id="syncStatus" class="synced"><i class="fas fa-cloud"></i> Synced</span>
             <div class="level-badge">
                 <i class="fas fa-star" style="color: var(--xp-color);"></i>
@@ -116,9 +166,12 @@
         <!-- DASHBOARD -->
         <div id="dashboard" class="page active">
             <div class="card">
-                <div class="card-header">Daily Routine & Habits</div>
+                <div class="card-header">
+                    <span><i class="fas fa-calendar-check" style="color: var(--primary);"></i> Daily Routine & Habits</span>
+                    <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">Red outline = Missed day</span>
+                </div>
                 <table class="data-table" style="margin-bottom: 20px;">
-                    <thead><tr><th>Habit</th><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th></th></tr></thead>
+                    <thead><tr><th>Habit</th><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th></th></tr></thead>
                     <tbody id="habitTableBody"></tbody>
                 </table>
                 <button class="btn-add" onclick="addHabit()">+ Add Habit</button>
@@ -129,12 +182,13 @@
         <!-- TASKS -->
         <div id="tasks" class="page">
             <div class="card">
-                <div class="card-header">Master Task List</div>
+                <div class="card-header"><i class="fas fa-list-ul" style="color: var(--primary);"></i> Master Task List</div>
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th style="width: 40px;"></th>
                             <th>Task Name</th>
+                            <th>Category</th>
                             <th>Due Date</th>
                             <th>Priority</th>
                             <th>Status</th>
@@ -148,10 +202,47 @@
             </div>
         </div>
 
+        <!-- FINANCES -->
+        <div id="finances" class="page">
+            <div class="finance-summary">
+                <div class="fin-box"><h3>Starting Balance</h3><div class="val editable" contenteditable="true" onfocus="startTyping()" onblur="updateFinStart(this.innerText); stopTyping()" id="finStart">$0.00</div></div>
+                <div class="fin-box"><h3>Total Income</h3><div class="val positive" id="finIncTotal">$0.00</div></div>
+                <div class="fin-box"><h3>Total Expenses</h3><div class="val negative" id="finExpTotal">$0.00</div></div>
+                <div class="fin-box"><h3>Current Net Bank</h3><div class="val" id="finNetTotal">$0.00</div></div>
+            </div>
+
+            <div class="savings-goal-container">
+                <div style="display: flex; justify-content: space-between; font-weight: 600;">
+                    <span>Savings Goal: $<span class="editable" contenteditable="true" onfocus="startTyping()" onblur="updateSavingsGoal(this.innerText); stopTyping()" id="savingsGoalTarget">1000</span></span>
+                    <span id="savingsGoalPercent">0%</span>
+                </div>
+                <div class="savings-bar-bg"><div class="savings-bar-fill" id="savingsBarFill"></div></div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div class="card" style="margin:0;">
+                    <div class="card-header" style="color: var(--success);">Income Sources</div>
+                    <table class="data-table">
+                        <thead><tr><th>Source</th><th>Amount</th><th></th></tr></thead>
+                        <tbody id="incomeTableBody"></tbody>
+                    </table>
+                    <button class="btn-add" onclick="addFinanceRow('income')">+ Add Income</button>
+                </div>
+                <div class="card" style="margin:0;">
+                    <div class="card-header" style="color: var(--danger);">Expenses & Bills</div>
+                    <table class="data-table">
+                        <thead><tr><th>Source</th><th>Amount</th><th></th></tr></thead>
+                        <tbody id="expenseTableBody"></tbody>
+                    </table>
+                    <button class="btn-add" onclick="addFinanceRow('expenses')">+ Add Expense</button>
+                </div>
+            </div>
+        </div>
+
         <!-- GOALS -->
         <div id="goals" class="page">
             <div class="card">
-                <div class="card-header">Long-Term Goals</div>
+                <div class="card-header"><i class="fas fa-trophy" style="color: var(--warning);"></i> Long-Term Goals</div>
                 <table class="data-table"><tbody id="goalsTableBody"></tbody></table>
                 <button class="btn-add" onclick="addGoal()">+ Add Goal</button>
             </div>
@@ -161,17 +252,16 @@
 
     <script>
         // ==========================================
-        // FIREBASE CONFIGURATION (From your screenshot!)
+        // 🛑 STEP 2: PASTE YOUR FIREBASE CONFIG HERE
         // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyCDc6zQJtjM6qjFZtkNpQDI0QbZDzOpDR4",
-            authDomain: "coolpopswebsite.firebaseapp.com",
-            databaseURL: "https://coolpopswebsite-default-rtdb.firebaseio.com",
-            projectId: "coolpopswebsite",
-            storageBucket: "coolpopswebsite.firebasestorage.app",
-            messagingSenderId: "841625716847",
-            appId: "1:841625716847:web:d70b476cce6fd1f5ee659a",
-            measurementId: "G-2JTX8J44FW"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
         
         // Initialize Firebase
@@ -183,7 +273,7 @@
         // ==========================================
         let currentProfile = 'user1'; // 'user1' (OKC) or 'user2' (Kharkiv)
         let currentPeriod = ""; 
-        let isTyping = false; // Prevents overwriting while typing
+        let isTyping = false; 
 
         const getEmptyData = () => ({
             settings: { darkMode: false, xp: 0, level: 1 },
@@ -193,15 +283,46 @@
         const getEmptyMonth = () => ({
             habits:[ { name: "Drink Water", days:[false, false, false, false, false, false, false] } ],
             weekDays:[
-                { name: "Sunday", tasks: [] }, { name: "Monday", tasks:[] }, { name: "Tuesday", tasks: [] },
+                { name: "Sunday", tasks: [] }, { name: "Monday", tasks:[] }, { name: "Tuesday", tasks:[] },
                 { name: "Wednesday", tasks:[] }, { name: "Thursday", tasks:[] }, { name: "Friday", tasks:[] }, { name: "Saturday", tasks:[] }
             ],
-            taskList: [],
-            goals:[]
+            taskList:[],
+            goals:[],
+            finances: { startingAmount: 0, savingsGoal: 1000, income:[], expenses:[] }
         });
 
         let localData = getEmptyData();
-        let appData = null; // Points to localData.months[currentPeriod]
+        let appData = null; 
+
+        // --- LIVE CLOCK & TIMEZONE LOGIC ---
+        function updateClock() {
+            const tz = currentProfile === 'user1' ? 'America/Chicago' : 'Europe/Kyiv';
+            const now = new Date();
+            
+            const timeString = now.toLocaleTimeString('en-US', { timeZone: tz, hour: '2-digit', minute:'2-digit', second:'2-digit' });
+            const dateString = now.toLocaleDateString('en-US', { timeZone: tz, weekday: 'short', month: 'short', day: 'numeric' });
+            
+            document.getElementById('clockTime').innerText = timeString;
+            document.getElementById('clockDate').innerText = dateString;
+        }
+        setInterval(updateClock, 1000);
+
+        function getCurrentDayIndex() {
+            const tz = currentProfile === 'user1' ? 'America/Chicago' : 'Europe/Kyiv';
+            const now = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
+            return now.getDay(); // 0 = Sun, 6 = Sat
+        }
+
+        function isDateOverdue(dateString) {
+            if(!dateString) return false;
+            const tz = currentProfile === 'user1' ? 'America/Chicago' : 'Europe/Kyiv';
+            const now = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
+            now.setHours(0,0,0,0); // Reset to midnight for fair comparison
+            
+            const due = new Date(dateString);
+            if(isNaN(due.getTime())) return false; // Invalid date format
+            return due < now;
+        }
 
         // --- FIREBASE REAL-TIME LISTENER ---
         function listenToCloud() {
@@ -209,14 +330,10 @@
             document.getElementById('syncStatus').innerHTML = '<i class="fas fa-sync fa-spin"></i> Syncing...';
 
             db.ref('profiles/' + currentProfile).on('value', (snapshot) => {
-                if (isTyping) return; // Don't update UI if user is currently typing
-                
+                if (isTyping) return; 
                 const data = snapshot.val();
-                if (data) {
-                    localData = data;
-                } else {
-                    localData = getEmptyData(); // First time setup
-                }
+                if (data) localData = data;
+                else localData = getEmptyData(); 
                 
                 applySettings();
                 ensureMonthExists(currentPeriod);
@@ -227,35 +344,30 @@
             });
         }
 
-        // --- PUSH TO CLOUD ---
         function saveToCloud() {
             document.getElementById('syncStatus').className = 'syncing';
             document.getElementById('syncStatus').innerHTML = '<i class="fas fa-arrow-up"></i> Saving...';
-            
             db.ref('profiles/' + currentProfile).set(localData).then(() => {
                 document.getElementById('syncStatus').className = 'synced';
                 document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> Synced';
             });
         }
 
-        // --- PROFILE SWITCHER ---
         function switchProfile(profileId) {
             currentProfile = profileId;
             document.querySelectorAll('.profile-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + profileId).classList.add('active');
-            
-            // Stop listening to old profile, start listening to new one
+            updateClock(); // Instantly update clock to new timezone
             db.ref().off(); 
             listenToCloud();
         }
 
-        // --- INITIALIZATION ---
         function initApp() {
             const today = new Date();
             currentPeriod = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
             document.getElementById('monthSelector').value = currentPeriod;
-            
-            listenToCloud(); // Starts the real-time sync
+            updateClock();
+            listenToCloud(); 
         }
 
         function ensureMonthExists(monthStr) {
@@ -265,6 +377,7 @@
                 saveToCloud();
             }
             appData = localData.months[monthStr];
+            if(!appData.finances) appData.finances = getEmptyMonth().finances;
         }
 
         function changeMonth(newMonthStr) {
@@ -284,28 +397,21 @@
             document.getElementById('xpBar').style.width = `${percent}%`;
         }
 
-        function toggleDarkMode() {
-            localData.settings.darkMode = !localData.settings.darkMode;
-            saveToCloud();
-            applySettings();
-        }
-
+        function toggleDarkMode() { localData.settings.darkMode = !localData.settings.darkMode; saveToCloud(); applySettings(); }
         function gainXP(amount) {
             localData.settings.xp += amount;
             let xpNeeded = localData.settings.level * 100;
             if (localData.settings.xp >= xpNeeded) {
                 localData.settings.xp -= xpNeeded;
                 localData.settings.level++;
-                alert(`🎉 LEVEL UP! ${currentProfile} is now Level ${localData.settings.level}!`);
+                alert(`🎉 LEVEL UP! ${currentProfile === 'user1' ? 'OKC' : 'Kharkiv'} is now Level ${localData.settings.level}!`);
             }
             saveToCloud();
         }
 
-        // --- TYPING HANDLERS (Prevents sync glitches) ---
         function startTyping() { isTyping = true; }
         function stopTyping() { isTyping = false; saveToCloud(); }
 
-        // --- RENDER FUNCTIONS ---
         function switchTab(tabId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -316,33 +422,43 @@
         function renderAll() {
             renderDashboard();
             renderTaskList();
+            renderFinances();
             renderGoals();
         }
 
-        // 1. DASHBOARD
+        // 1. DASHBOARD (WITH MISSED LOGIC)
         function renderDashboard() {
+            const currentDay = getCurrentDayIndex();
+            
             if(!appData.habits) appData.habits =[];
             document.getElementById('habitTableBody').innerHTML = appData.habits.map((habit, hIndex) => `
                 <tr>
                     <td><span class="editable" contenteditable="true" onfocus="startTyping()" onblur="updateHabitName(${hIndex}, this.innerText); stopTyping()">${habit.name}</span></td>
-                    ${habit.days.map((day, dIndex) => `<td><input type="checkbox" ${day ? 'checked' : ''} onchange="toggleHabit(${hIndex}, ${dIndex})"></td>`).join('')}
+                    ${habit.days.map((day, dIndex) => {
+                        let isMissed = (dIndex < currentDay) && !day;
+                        return `<td><input type="checkbox" class="${isMissed ? 'missed' : ''}" ${day ? 'checked' : ''} onchange="toggleHabit(${hIndex}, ${dIndex})"></td>`;
+                    }).join('')}
                     <td><button class="btn-icon" onclick="deleteHabit(${hIndex})"><i class="fas fa-trash"></i></button></td>
                 </tr>
             `).join('');
 
             if(!appData.weekDays) appData.weekDays = getEmptyMonth().weekDays;
             document.getElementById('weeklyGrid').innerHTML = appData.weekDays.map((day, dIndex) => {
-                let tasksHTML = (day.tasks ||[]).map((t, tIndex) => `
+                let isToday = dIndex === currentDay;
+                
+                let tasksHTML = (day.tasks ||[]).map((t, tIndex) => {
+                    let isMissed = (dIndex < currentDay) && !t.done;
+                    return `
                     <li class="${t.done ? 'done' : ''}">
-                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleDayTask(${dIndex}, ${tIndex})">
-                        <span class="editable task-text" contenteditable="true" onfocus="startTyping()" onblur="updateDayTaskName(${dIndex}, ${tIndex}, this.innerText); stopTyping()">${t.name}</span>
+                        <input type="checkbox" class="${isMissed ? 'missed' : ''}" ${t.done ? 'checked' : ''} onchange="toggleDayTask(${dIndex}, ${tIndex})">
+                        <span class="editable task-text ${isMissed ? 'missed-text' : ''}" contenteditable="true" onfocus="startTyping()" onblur="updateDayTaskName(${dIndex}, ${tIndex}, this.innerText); stopTyping()">${t.name}</span>
                         <button class="btn-icon" onclick="deleteDayTask(${dIndex}, ${tIndex})"><i class="fas fa-times"></i></button>
-                    </li>
-                `).join('');
+                    </li>`;
+                }).join('');
 
                 return `
                     <div class="day-card">
-                        <div class="day-header">${day.name}</div>
+                        <div class="day-header ${isToday ? 'is-today' : ''}">${day.name} ${isToday ? '(Today)' : ''}</div>
                         <ul class="task-list-mini">${tasksHTML}</ul>
                         <div style="padding: 10px;"><button class="btn-add" style="margin:0;" onclick="addDayTask(${dIndex})">+ Add</button></div>
                     </div>
@@ -360,14 +476,26 @@
         function updateDayTaskName(d, t, name) { appData.weekDays[d].tasks[t].name = name; }
         function toggleDayTask(d, t) { appData.weekDays[d].tasks[t].done = !appData.weekDays[d].tasks[t].done; if(appData.weekDays[d].tasks[t].done) gainXP(10); saveToCloud(); }
 
-        // 2. TASKS (WITH REPEAT FEATURE)
+        // 2. TASKS (WITH OVERDUE LOGIC)
         function renderTaskList() {
             if(!appData.taskList) appData.taskList =[];
-            document.getElementById('taskListBody').innerHTML = appData.taskList.map((task, index) => `
+            document.getElementById('taskListBody').innerHTML = appData.taskList.map((task, index) => {
+                let isOverdue = isDateOverdue(task.due) && !task.done;
+                let statusClass = isOverdue ? 's-overdue' : `s-${task.status}`;
+                let statusText = isOverdue ? 'OVERDUE' : task.status.replace('-', ' ');
+
+                return `
                 <tr style="${task.done ? 'opacity: 0.5;' : ''}">
                     <td><input type="checkbox" ${task.done ? 'checked' : ''} onchange="toggleMainTask(${index})"></td>
-                    <td style="${task.done ? 'text-decoration: line-through;' : ''}" class="editable" contenteditable="true" onfocus="startTyping()" onblur="updateMainTask(${index}, 'name', this.innerText); stopTyping()">${task.name}</td>
-                    <td class="editable" contenteditable="true" onfocus="startTyping()" onblur="updateMainTask(${index}, 'due', this.innerText); stopTyping()">${task.due || 'DD/MM'}</td>
+                    <td style="${task.done ? 'text-decoration: line-through;' : ''}" class="editable ${isOverdue ? 'missed-text' : ''}" contenteditable="true" onfocus="startTyping()" onblur="updateMainTask(${index}, 'name', this.innerText); stopTyping()">${task.name}</td>
+                    <td>
+                        <select onchange="updateMainTask(${index}, 'category', this.value); saveToCloud()" style="border:none; background:transparent; cursor:pointer; color:var(--text-muted); font-weight:600;">
+                            <option value="Work" ${task.category==='Work'?'selected':''}>💼 Work</option>
+                            <option value="Personal" ${task.category==='Personal'?'selected':''}>🏠 Personal</option>
+                            <option value="Health" ${task.category==='Health'?'selected':''}>💪 Health</option>
+                        </select>
+                    </td>
+                    <td><input type="date" value="${task.due || ''}" onchange="updateMainTask(${index}, 'due', this.value); saveToCloud()" style="border:1px solid var(--border-color); border-radius:4px; padding:4px; background:var(--bg-color); color:var(--text-main);"></td>
                     <td>
                         <select onchange="updateMainTask(${index}, 'priority', this.value); saveToCloud()" style="border:none; background:transparent; cursor:pointer; color:var(--text-main);">
                             <option value="high" ${task.priority==='high'?'selected':''}>🔴 High</option>
@@ -376,7 +504,7 @@
                         </select>
                     </td>
                     <td>
-                        <select class="status-badge s-${task.status}" onchange="updateMainTask(${index}, 'status', this.value); saveToCloud()">
+                        <select class="status-badge ${statusClass}" onchange="updateMainTask(${index}, 'status', this.value); saveToCloud()">
                             <option value="not-started" ${task.status==='not-started'?'selected':''}>Not Started</option>
                             <option value="in-progress" ${task.status==='in-progress'?'selected':''}>In Progress</option>
                             <option value="done" ${task.status==='done'?'selected':''}>Done</option>
@@ -387,15 +515,15 @@
                             <option value="none" ${task.repeat==='none'?'selected':''}>No Repeat</option>
                             <option value="daily" ${task.repeat==='daily'?'selected':''}>Daily</option>
                             <option value="weekly" ${task.repeat==='weekly'?'selected':''}>Weekly</option>
-                            <option value="monthly" ${task.repeat==='monthly'?'selected':''}>Monthly</option>
                         </select>
                     </td>
                     <td><button class="btn-icon" onclick="deleteMainTask(${index})"><i class="fas fa-trash"></i></button></td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        function addNewMainTask() { appData.taskList.push({ name: "New Task", due: "", priority: "medium", status: "not-started", done: false, repeat: "none" }); saveToCloud(); }
+        function addNewMainTask() { appData.taskList.push({ name: "New Task", category: "Personal", due: "", priority: "medium", status: "not-started", done: false, repeat: "none" }); saveToCloud(); }
         function deleteMainTask(index) { appData.taskList.splice(index, 1); saveToCloud(); }
         function toggleMainTask(index) { 
             appData.taskList[index].done = !appData.taskList[index].done; 
@@ -408,7 +536,48 @@
             if(field === 'status') appData.taskList[index].done = (val === 'done');
         }
 
-        // 3. GOALS
+        // 3. FINANCES
+        function renderFinances() {
+            const f = appData.finances;
+            document.getElementById('finStart').innerText = f.startingAmount;
+            document.getElementById('savingsGoalTarget').innerText = f.savingsGoal;
+
+            const renderTable = (type, bodyId) => {
+                document.getElementById(bodyId).innerHTML = f[type].map((item, i) => `
+                    <tr>
+                        <td class="editable" contenteditable="true" onfocus="startTyping()" onblur="updateFin(${i}, '${type}', 'source', this.innerText); stopTyping()">${item.source}</td>
+                        <td>$<span class="editable" contenteditable="true" onfocus="startTyping()" onblur="updateFin(${i}, '${type}', 'amount', this.innerText); stopTyping()">${item.amount}</span></td>
+                        <td><button class="btn-icon" onclick="deleteFinRow('${type}', ${i})"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `).join('');
+            };
+
+            renderTable('income', 'incomeTableBody');
+            renderTable('expenses', 'expenseTableBody');
+
+            // Calculate Totals
+            let incTotal = f.income.reduce((a, b) => a + (parseFloat(b.amount) || 0), 0);
+            let expTotal = f.expenses.reduce((a, b) => a + (parseFloat(b.amount) || 0), 0);
+            let net = (parseFloat(f.startingAmount) || 0) + incTotal - expTotal;
+
+            document.getElementById('finIncTotal').innerText = `$${incTotal.toFixed(2)}`;
+            document.getElementById('finExpTotal').innerText = `$${expTotal.toFixed(2)}`;
+            document.getElementById('finNetTotal').innerText = `$${net.toFixed(2)}`;
+
+            // Savings Goal Progress
+            let goal = parseFloat(f.savingsGoal) || 1;
+            let percent = Math.min(100, Math.max(0, (net / goal) * 100));
+            document.getElementById('savingsBarFill').style.width = `${percent}%`;
+            document.getElementById('savingsGoalPercent').innerText = `${percent.toFixed(1)}%`;
+        }
+
+        function addFinanceRow(type) { appData.finances[type].push({ source: "New", amount: 0 }); saveToCloud(); }
+        function deleteFinRow(type, index) { appData.finances[type].splice(index, 1); saveToCloud(); }
+        function updateFin(index, type, field, val) { appData.finances[type][index][field] = field === 'amount' ? (parseFloat(val)||0) : val; }
+        function updateFinStart(val) { appData.finances.startingAmount = parseFloat(val) || 0; }
+        function updateSavingsGoal(val) { appData.finances.savingsGoal = parseFloat(val) || 1000; }
+
+        // 4. GOALS
         function renderGoals() {
             if(!appData.goals) appData.goals =[];
             document.getElementById('goalsTableBody').innerHTML = appData.goals.map((g, i) => `
