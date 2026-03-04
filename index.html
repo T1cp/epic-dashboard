@@ -44,8 +44,8 @@
         #ghostCursor { position: fixed; pointer-events: none; z-index: 99999; display: none; transition: top 0.1s linear, left 0.1s linear; color: var(--warning); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
         #ghostCursor span { background: var(--warning); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-family: var(--font-mono); font-weight: bold; margin-left: 5px; }
 
-        /* --- LAYOUT: SIDEBAR --- */
-        #sidebar { width: 260px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px 0; z-index: 100; }
+        /* --- LAYOUT: SIDEBAR & MOBILE --- */
+        #sidebar { width: 260px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px 0; z-index: 100; transition: left 0.3s ease; }
         .brand { padding: 0 20px 20px 20px; font-size: 18px; font-weight: 700; letter-spacing: 1px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         
         .profile-switcher { display: flex; flex-direction: column; gap: 8px; padding: 0 20px; margin-bottom: 20px; }
@@ -57,7 +57,7 @@
         .status-dot.idle { background-color: var(--warning); }
         .status-dot.offline { background-color: var(--text-muted); }
 
-        nav { display: flex; flex-direction: column; gap: 5px; padding: 0 10px; flex-grow: 1; }
+        nav { display: flex; flex-direction: column; gap: 5px; padding: 0 10px; flex-grow: 1; overflow-y: auto; }
         .tab-btn { padding: 10px 20px; border: none; background: transparent; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 12px; text-align: left; }
         .tab-btn i { width: 16px; text-align: center; }
         .tab-btn:hover { background: var(--bg-hover); color: var(--text-main); }
@@ -67,7 +67,7 @@
         .widget { background: var(--bg-base); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; }
         .widget i { color: var(--primary); }
 
-        /* Weather Hover Dropdown */
+        /* Weather Hover Dropdown & Toggle */
         .weather-container { position: relative; cursor: help; }
         .weather-dropdown {
             display: none; position: absolute; bottom: 110%; left: 0; width: 100%;
@@ -77,15 +77,19 @@
         }
         .weather-container:hover .weather-dropdown { display: flex; }
         .forecast-row { display: flex; justify-content: space-between; font-size: 11px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
-        .forecast-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .unit-toggle { background: var(--border-color); border: none; color: var(--text-main); padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 10px; margin-left: 5px; }
+        .unit-toggle:hover { background: var(--primary); }
 
         /* --- LAYOUT: MAIN CONTENT --- */
-        #main-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-base); }
+        #main-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-base); position: relative; }
         
         .top-bar { height: 60px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; background: var(--bg-panel); }
         .top-controls { display: flex; align-items: center; gap: 15px; }
         .icon-btn { background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-muted); padding: 8px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
         .icon-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
+
+        #hamburgerBtn { display: none; font-size: 18px; color: var(--text-main); background: transparent; border: none; cursor: pointer; margin-right: 15px; }
+        #mobileOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90; }
 
         .page-container { padding: 30px; overflow-y: auto; flex-grow: 1; }
         .page { display: none; animation: fadeIn 0.2s ease forwards; } .page.active { display: block; }
@@ -107,16 +111,25 @@
 
         .editable { padding: 4px 6px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--text-main); outline: none; transition: 0.2s; font-family: inherit; font-size: inherit; }
         .editable:hover, .editable:focus { border-color: var(--primary); background: var(--bg-base); }
-        .locked-field { border: 1px solid var(--danger) !important; background: rgba(239, 68, 68, 0.1) !important; pointer-events: none; }
+
+        /* --- TODAY PAGE (NEW) --- */
+        .today-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+        .today-list li { display: flex; align-items: center; gap: 10px; background: var(--bg-base); padding: 10px 15px; border-radius: 6px; border: 1px solid var(--border-color); }
+        .today-list li.done { opacity: 0.5; }
+        .today-list li.done .task-text { text-decoration: line-through; }
+        details.task-group { background: var(--bg-base); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px; }
+        details.task-group summary { padding: 10px 15px; font-weight: 600; cursor: pointer; outline: none; background: var(--bg-hover); border-radius: 6px; }
+        details.task-group .group-content { padding: 10px 15px; display: flex; flex-direction: column; gap: 8px; }
 
         /* --- TABLES --- */
-        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .table-responsive { overflow-x: auto; width: 100%; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
         .data-table th, .data-table td { padding: 10px; border-bottom: 1px solid var(--border-color); text-align: left; }
         .data-table th { color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
         .data-table tr:hover { background: var(--bg-hover); }
 
         /* --- DASHBOARD WEEKLY GRID --- */
-        .weekly-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        .weekly-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; min-width: 800px; }
         .day-col { background: var(--bg-base); border: 1px solid var(--border-color); border-radius: 6px; display: flex; flex-direction: column; }
         .day-header { background: var(--bg-hover); text-align: center; padding: 8px; font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border-color); }
         .day-header.is-today { background: var(--primary); color: white; border-color: var(--primary); }
@@ -126,7 +139,7 @@
         .task-text { flex-grow: 1; word-break: break-word; outline: none; border: none; background: transparent; color: inherit; font-family: inherit; }
 
         /* --- CALENDAR --- */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; min-width: 700px; }
         .cal-day-header { text-align: center; font-size: 11px; font-weight: 600; color: var(--text-muted); padding-bottom: 5px; text-transform: uppercase; }
         .cal-box { background: var(--bg-base); border: 1px solid var(--border-color); border-radius: 4px; min-height: 100px; padding: 6px; display: flex; flex-direction: column; transition: 0.2s; }
         .cal-box:hover { border-color: var(--text-muted); }
@@ -183,6 +196,16 @@
         .chat-input { flex-grow: 1; padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-main); outline: none; font-size: 13px; }
         .chat-input:focus { border-color: var(--primary); }
 
+        /* --- MOBILE MEDIA QUERIES --- */
+        @media (max-width: 768px) {
+            #sidebar { position: fixed; left: -260px; height: 100%; }
+            #sidebar.open { left: 0; }
+            #hamburgerBtn { display: block; }
+            .top-bar { padding: 0 15px; }
+            .fin-summary-grid { grid-template-columns: 1fr 1fr; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .page-container { padding: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -201,10 +224,7 @@
     </div>
 
     <!-- GHOST CURSOR -->
-    <div id="ghostCursor">
-        <i class="fas fa-mouse-pointer" style="font-size: 16px;"></i>
-        <span id="ghostName">User</span>
-    </div>
+    <div id="ghostCursor"><i class="fas fa-mouse-pointer" style="font-size: 16px;"></i><span id="ghostName">User</span></div>
 
     <!-- AUDIO -->
     <audio id="sfx-check" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
@@ -224,6 +244,9 @@
         </div>
     </div>
 
+    <!-- MOBILE OVERLAY -->
+    <div id="mobileOverlay" onclick="toggleSidebar()"></div>
+
     <!-- SIDEBAR -->
     <div id="sidebar">
         <div class="brand mono"><i class="fas fa-terminal" style="color: var(--primary);"></i> SCHEDULER</div>
@@ -242,7 +265,8 @@
 
         <nav>
             <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin: 10px 0 4px 10px;">Modules</div>
-            <button class="tab-btn active" onclick="switchTab('dashboard')"><i class="fas fa-th-large"></i> Dashboard</button>
+            <button class="tab-btn active" onclick="switchTab('today')"><i class="fas fa-sun"></i> Today</button>
+            <button class="tab-btn" onclick="switchTab('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</button>
             <button class="tab-btn" onclick="switchTab('calendar')"><i class="fas fa-calendar-alt"></i> Calendar</button>
             <button class="tab-btn" onclick="switchTab('tasks')"><i class="fas fa-tasks"></i> Master Tasks</button>
             <button class="tab-btn" onclick="switchTab('finances')"><i class="fas fa-wallet"></i> Finances</button>
@@ -252,9 +276,8 @@
         </nav>
 
         <div class="sidebar-widgets">
-            <!-- Weather Widget with Hover Dropdown -->
             <div class="widget mono weather-container" id="weatherWidgetBox">
-                <div id="weatherWidget"><i class="fas fa-cloud"></i> Loading...</div>
+                <div id="weatherWidget"><i class="fas fa-cloud"></i> <span id="tempDisplay">--</span><button class="unit-toggle" onclick="toggleTempUnit(); event.stopPropagation();">°C/F</button></div>
                 <div class="weather-dropdown" id="weatherDropdown">Loading forecast...</div>
             </div>
             
@@ -266,13 +289,13 @@
     <!-- MAIN CONTENT -->
     <div id="main-content">
         <div class="top-bar">
-            <div style="display: flex; align-items: center; gap: 5px;">
+            <div style="display: flex; align-items: center;">
+                <button id="hamburgerBtn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
                 <span class="mono" style="font-weight: 600; color: var(--text-muted); margin-right: 10px;">PERIOD:</span>
-                <!-- Calendar Navigation -->
-                <button class="icon-btn" onclick="shiftMonth(-1)" title="Previous Month"><i class="fas fa-chevron-left"></i></button>
+                <button class="icon-btn" onclick="shiftMonth(-1)" title="Previous Month" style="margin-right:2px; padding:4px 8px;"><i class="fas fa-chevron-left"></i></button>
                 <input type="month" id="monthSelector" class="mono editable" onchange="changeMonth(this.value)" style="border: 1px solid var(--border-color); background: var(--bg-base); padding: 4px 8px;">
-                <button class="icon-btn" onclick="shiftMonth(1)" title="Next Month"><i class="fas fa-chevron-right"></i></button>
-                <button class="icon-btn" onclick="goToToday()" title="Back to Current Month" style="margin-left: 10px;"><i class="fas fa-calendar-day" style="color: var(--primary);"></i></button>
+                <button class="icon-btn" onclick="shiftMonth(1)" title="Next Month" style="margin-left:2px; padding:4px 8px;"><i class="fas fa-chevron-right"></i></button>
+                <button class="icon-btn" onclick="goToToday()" title="Back to Current Month" style="margin-left: 10px; padding:4px 8px;"><i class="fas fa-calendar-day" style="color: var(--primary);"></i></button>
             </div>
             <div class="top-controls">
                 <button class="icon-btn" onclick="document.getElementById('floatingTimer').style.display='flex'" title="Open Timer"><i class="fas fa-stopwatch"></i></button>
@@ -282,30 +305,56 @@
 
         <div class="page-container">
             
-            <!-- DASHBOARD -->
-            <div id="dashboard" class="page active">
-                <div class="card">
-                    <div class="card-header">Daily Habits & Mood <span class="mono" style="font-size: 11px; font-weight: normal; color:var(--text-muted);">Red = Missed</span></div>
-                    <div style="overflow-x: auto;">
-                        <table class="data-table" style="margin-bottom: 10px;">
-                            <thead><tr><th>Habit</th><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th></th></tr></thead>
-                            <tbody id="habitTableBody"></tbody>
-                            <tfoot>
-                                <tr style="background: var(--bg-base);">
-                                    <td style="font-weight: 600; color: var(--text-muted);"><i class="fas fa-smile"></i> Mood</td>
-                                    <td id="mood-0"></td><td id="mood-1"></td><td id="mood-2"></td><td id="mood-3"></td><td id="mood-4"></td><td id="mood-5"></td><td id="mood-6"></td>
-                                    <td></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    <button class="btn-add" onclick="addHabit()">+ Add Habit</button>
+            <!-- NEW TODAY PAGE -->
+            <div id="today" class="page active">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2><i class="fas fa-sun" style="color: var(--warning);"></i> Today's Focus</h2>
+                    <span class="mono" style="color: var(--text-muted);" id="todayDateLabel">March 4, 2026</span>
                 </div>
 
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <!-- Daily Routine (Habits) -->
+                    <div class="card" style="margin: 0;">
+                        <div class="card-header">Daily Routine</div>
+                        <ul class="today-list" id="todayHabitsList"></ul>
+                        <div style="display: flex; gap: 5px; margin-top: 10px;">
+                            <input type="text" id="newHabitInput" class="editable" style="flex-grow: 1; border: 1px solid var(--border-color);" placeholder="Add new daily habit...">
+                            <button class="btn-add" style="width: auto; margin: 0; padding: 5px 15px;" onclick="addGlobalHabit()">Add</button>
+                        </div>
+                    </div>
+
+                    <!-- Today's Tasks Master -->
+                    <div class="card" style="margin: 0;">
+                        <div class="card-header">
+                            Task Master
+                            <label style="font-size: 11px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" id="hideCompletedTasksToggle" onchange="renderToday()"> Hide Completed
+                            </label>
+                        </div>
+                        <div id="todayTaskGroups">
+                            <!-- Populated by JS -->
+                        </div>
+                        <button class="btn-add" onclick="addNewGlobalTask(getLocalDateStr(new Date()))">+ Add Task for Today</button>
+                    </div>
+
+                    <!-- Today's Top Goal -->
+                    <div class="card" style="margin: 0; height: fit-content; background: rgba(79, 70, 229, 0.05); border-color: var(--primary);">
+                        <div class="card-header" style="border:none; padding-bottom: 0;">Goal to do Today</div>
+                        <div style="font-size: 16px; font-weight: 600; color: var(--primary); text-align: center; padding: 20px 0;" id="todayTopGoal">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD (Weekly) -->
+            <div id="dashboard" class="page">
                 <div class="card">
                     <div class="card-header">Weekly Task Execution <span class="mono" style="font-size: 11px; font-weight: normal; color:var(--text-muted);">Synced globally</span></div>
-                    <div class="weekly-grid" id="weeklyGrid">
-                        <!-- Generated by JS -->
+                    <div class="table-responsive">
+                        <div class="weekly-grid" id="weeklyGrid">
+                            <!-- Generated by JS -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -314,15 +363,16 @@
             <div id="calendar" class="page">
                 <div class="card">
                     <div class="card-header">Global Task Calendar <span class="mono" style="font-size: 11px; font-weight: normal; color:var(--text-muted);">Click a day to add a task</span></div>
-                    <div class="calendar-grid" id="calendarGrid">
-                        <!-- Generated by JS -->
+                    <div class="table-responsive">
+                        <div class="calendar-grid" id="calendarGrid">
+                            <!-- Generated by JS -->
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- TASKS -->
             <div id="tasks" class="page">
-                <!-- Global Inbox -->
                 <div class="card" style="background: rgba(79, 70, 229, 0.05); border-color: var(--primary);">
                     <div class="card-header" style="margin-bottom: 10px; padding-bottom: 5px; border:none;">
                         <span><i class="fas fa-inbox" style="color: var(--primary);"></i> Global Inbox (Quick Capture)</span>
@@ -335,10 +385,10 @@
                 </div>
 
                 <div class="card">
-                    <div class="card-header">Global Task Registry <span class="mono" style="font-size: 11px; font-weight: normal; color:var(--text-muted);">All tasks across all dates</span></div>
-                    <div style="overflow-x: auto;">
+                    <div class="card-header">Global Task Registry</div>
+                    <div class="table-responsive">
                         <table class="data-table">
-                            <thead><tr><th style="width: 30px;"></th><th>Task Name</th><th>Due Date (Y2K+)</th><th>Repeat</th><th>Priority</th><th>Status</th><th style="width: 30px;"></th></tr></thead>
+                            <thead><tr><th style="width: 30px;"></th><th>Task Name & Sub-tasks</th><th>Category</th><th>Due Date & Time</th><th>Repeat</th><th>Priority</th><th>Status</th><th style="width: 30px;"></th></tr></thead>
                             <tbody id="taskListBody"></tbody>
                         </table>
                     </div>
@@ -364,16 +414,15 @@
                     </div>
 
                     <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
-                        <!-- Income & Expenses Tables -->
-                        <div style="flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-width: 60%;">
+                        <div style="flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; min-width: 60%;">
                             <div>
                                 <h3 style="color: var(--success); margin-bottom: 10px; font-size: 13px;">INCOME</h3>
-                                <table class="data-table"><tbody id="incomeTableBody"></tbody></table>
+                                <div class="table-responsive"><table class="data-table"><tbody id="incomeTableBody"></tbody></table></div>
                                 <button class="btn-add" onclick="addFinanceRow('income')">+ Add Income</button>
                             </div>
                             <div>
                                 <h3 style="color: var(--danger); margin-bottom: 10px; font-size: 13px;">EXPENSES</h3>
-                                <table class="data-table"><tbody id="expenseTableBody"></tbody></table>
+                                <div class="table-responsive"><table class="data-table"><tbody id="expenseTableBody"></tbody></table></div>
                                 <button class="btn-add" onclick="addFinanceRow('expenses')">+ Add Expense</button>
                             </div>
                         </div>
@@ -391,7 +440,7 @@
                                     <button class="calc-btn" onclick="calcPress('4')">4</button>
                                     <button class="calc-btn" onclick="calcPress('5')">5</button>
                                     <button class="calc-btn" onclick="calcPress('6')">6</button>
-                                    <button class="calc-btn op" onclick="calcPress('*')">*</button>
+                                    <button class="calc-btn op" onclick="calcPress('*')">×</button>
                                     <button class="calc-btn" onclick="calcPress('1')">1</button>
                                     <button class="calc-btn" onclick="calcPress('2')">2</button>
                                     <button class="calc-btn" onclick="calcPress('3')">3</button>
@@ -429,8 +478,8 @@
                 </div>
 
                 <div class="card">
-                    <div class="card-header">Personal Objectives</div>
-                    <table class="data-table"><tbody id="goalsTableBody"></tbody></table>
+                    <div class="card-header">Personal Goals</div>
+                    <div class="table-responsive"><table class="data-table"><tbody id="goalsTableBody"></tbody></table></div>
                     <button class="btn-add" onclick="addGoal()">+ Add Goal</button>
                 </div>
             </div>
@@ -438,11 +487,13 @@
             <!-- VAULT -->
             <div id="vault" class="page">
                 <div class="card">
-                    <div class="card-header">Resource Vault <span class="mono" style="font-size: 11px; font-weight: normal; color: var(--text-muted);">Permanent Links</span></div>
-                    <table class="data-table">
-                        <thead><tr><th>Title</th><th>URL</th><th></th></tr></thead>
-                        <tbody id="vaultTableBody"></tbody>
-                    </table>
+                    <div class="card-header">Resource Vault</div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>Title</th><th>URL</th><th></th></tr></thead>
+                            <tbody id="vaultTableBody"></tbody>
+                        </table>
+                    </div>
                     <button class="btn-add" onclick="addVaultLink()">+ Add Resource</button>
                 </div>
             </div>
@@ -485,7 +536,7 @@
         // ==========================================
         let myIdentity = null; 
         let currentProfile = 'the1coolpop'; 
-        let currentTab = 'dashboard';
+        let currentTab = 'today';
         let currentPeriod = ""; 
         let isTypingLocal = false; 
         let lastMessageCount = 0;
@@ -496,18 +547,13 @@
         const getEmptyData = () => ({
             settings: { darkMode: false },
             globalTasks:[], // Tasks span across months
-            months: {}, vault:[], inbox:[],
+            globalHabits: [ { id: 1, name: "Drink Water", logs: {} } ], // Habits now persist globally!
+            months: {}, vault:[], inbox:[], goals:[],
+            finances: { startingAmount: 0, income:[], expenses:[] },
             coopGoal: { name: "Save $10,000 together", progress: 0, max: 100 }
         });
 
-        const getEmptyMonth = () => ({
-            habits:[ { name: "Drink Water", days:[false, false, false, false, false, false, false] } ],
-            moods:["", "", "", "", "", "", ""],
-            goals:[], finances: { startingAmount: 0, income:[], expenses:[] }
-        });
-
         let localData = getEmptyData();
-        let appData = null; // Pointer to localData.months[currentPeriod]
 
         // --- CORE INITIALIZATION ---
         function setIdentity(identity) {
@@ -534,6 +580,20 @@
 
             updateClock(); fetchWeather(); initCharts(); listenToCloud(); 
             document.addEventListener('mousemove', handleGhostCursor);
+            document.getElementById('todayDateLabel').innerText = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        }
+
+        // --- MOBILE SIDEBAR TOGGLE ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if(sidebar.style.left === '0px') {
+                sidebar.style.left = '-260px';
+                overlay.style.display = 'none';
+            } else {
+                sidebar.style.left = '0px';
+                overlay.style.display = 'block';
+            }
         }
 
         // --- PRESENCE & IDLE ---
@@ -547,20 +607,16 @@
             if(myIdentity) db.ref('shared/status/' + myIdentity).set({ state: state, time: Date.now() });
         }
 
-        // --- NATIVE NOTIFICATION TIMER (AUDIO UNLOCKED) ---
+        // --- NATIVE NOTIFICATION TIMER ---
         let osTimerInterval = null;
         function startTimerPrompt() {
             let mins = prompt("Set timer for how many minutes? (e.g., 25)");
             if(!mins || isNaN(mins)) return;
             
-            // Audio Unlock Trick
             let sfx = document.getElementById('sfx-timer');
-            sfx.volume = 0; 
-            sfx.play().then(() => { sfx.pause(); sfx.currentTime = 0; sfx.volume = 1; }).catch(e=>{});
+            sfx.volume = 0; sfx.play().then(() => { sfx.pause(); sfx.currentTime = 0; sfx.volume = 1; }).catch(e=>{});
 
             Notification.requestPermission().then(perm => {
-                if(perm !== 'granted') alert("Please allow browser notifications for the timer to alert you!");
-                
                 let secondsLeft = mins * 60;
                 if(osTimerInterval) clearInterval(osTimerInterval);
                 
@@ -574,19 +630,13 @@
                     if(secondsLeft <= 0) {
                         clearInterval(osTimerInterval);
                         document.title = "Scheduler";
-                        if(perm === 'granted') new Notification("Scheduler Timer", { body: "Time is up!", icon: "https://api.dicebear.com/7.x/avataaars/svg?seed=timer" });
-                        playSound('timer');
-                        setTimeout(()=>playSound('timer'), 1000);
-                        setTimeout(()=>playSound('timer'), 2000);
+                        if(perm === 'granted') new Notification("Timer Done", { body: "Time is up!" });
+                        playSound('timer'); setTimeout(()=>playSound('timer'), 1000); setTimeout(()=>playSound('timer'), 2000);
                     }
                 }, 1000);
             });
         }
-        function stopTimer() {
-            if(osTimerInterval) clearInterval(osTimerInterval);
-            document.getElementById('timerDisplay').innerText = "00:00";
-            document.title = "Scheduler";
-        }
+        function stopTimer() { if(osTimerInterval) clearInterval(osTimerInterval); document.getElementById('timerDisplay').innerText = "00:00"; document.title = "Scheduler"; }
         function closeTimer() { document.getElementById('floatingTimer').style.display = 'none'; }
 
         // --- GHOST CURSOR & NUDGE ---
@@ -595,10 +645,7 @@
             if(!myIdentity) return;
             if(Date.now() - lastMouseUpdate < 50) return; 
             lastMouseUpdate = Date.now();
-            db.ref('shared/presence/' + myIdentity).set({
-                x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight,
-                profile: currentProfile, tab: currentTab
-            });
+            db.ref('shared/presence/' + myIdentity).set({ x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight, profile: currentProfile, tab: currentTab });
         }
 
         function listenToPresence() {
@@ -609,78 +656,51 @@
                 const val = snap.val();
                 const cursor = document.getElementById('ghostCursor');
                 if(val && val.profile === currentProfile && val.tab === currentTab) {
-                    cursor.style.display = 'flex';
-                    cursor.style.left = (val.x * 100) + 'vw';
-                    cursor.style.top = (val.y * 100) + 'vh';
+                    cursor.style.display = 'flex'; cursor.style.left = (val.x * 100) + 'vw'; cursor.style.top = (val.y * 100) + 'vh';
                     document.getElementById('ghostName').innerText = otherIdentity;
-                } else {
-                    cursor.style.display = 'none';
-                }
+                } else { cursor.style.display = 'none'; }
             });
 
-            db.ref('shared/nudge/' + myIdentity).on('value', snap => {
-                if(snap.val() && Date.now() - snap.val() < 5000) {
-                    playSound('msg');
-                }
-            });['the1coolpop', 'goshaaaa'].forEach(user => {
+            db.ref('shared/nudge/' + myIdentity).on('value', snap => { if(snap.val() && Date.now() - snap.val() < 5000) playSound('msg'); });['the1coolpop', 'goshaaaa'].forEach(user => {
                 db.ref('shared/status/' + user).on('value', snap => {
-                    const val = snap.val();
-                    const dot = document.getElementById('status-' + user);
+                    const val = snap.val(); const dot = document.getElementById('status-' + user);
                     dot.className = 'status-dot offline'; 
-                    if(val) {
-                        if(val.state === 'online') dot.className = 'status-dot online';
-                        if(val.state === 'idle') dot.className = 'status-dot idle';
-                    }
+                    if(val) { if(val.state === 'online') dot.className = 'status-dot online'; if(val.state === 'idle') dot.className = 'status-dot idle'; }
                 });
             });
         }
 
-        function sendNudge() {
-            const otherIdentity = myIdentity === 'the1coolpop' ? 'goshaaaa' : 'the1coolpop';
-            db.ref('shared/nudge/' + otherIdentity).set(Date.now());
-            alert("Nudge sent!");
-        }
+        function sendNudge() { const otherIdentity = myIdentity === 'the1coolpop' ? 'goshaaaa' : 'the1coolpop'; db.ref('shared/nudge/' + otherIdentity).set(Date.now()); alert("Nudge sent!"); }
 
         // --- ACTIVE EDIT LOCKS ---
-        function setLock(fieldId) {
-            if(!myIdentity) return;
-            db.ref('shared/locks/' + currentProfile + '/' + fieldId).set(myIdentity);
-            isTypingLocal = true;
-        }
-        function clearLock(fieldId) {
-            if(!myIdentity) return;
-            db.ref('shared/locks/' + currentProfile + '/' + fieldId).remove();
-            isTypingLocal = false;
-            saveToCloud();
-        }
-
+        function setLock(fieldId) { if(!myIdentity) return; db.ref('shared/locks/' + currentProfile + '/' + fieldId).set(myIdentity); isTypingLocal = true; }
+        function clearLock(fieldId) { if(!myIdentity) return; db.ref('shared/locks/' + currentProfile + '/' + fieldId).remove(); isTypingLocal = false; saveToCloud(); }
         function applyLocksDOM() {
             document.querySelectorAll('.editable').forEach(el => {
                 let id = el.getAttribute('data-lock-id');
                 if(id && activeLocks[id] && activeLocks[id] !== myIdentity) {
-                    el.classList.add('locked-field');
-                    el.disabled = true;
-                    el.title = "Currently being edited by " + activeLocks[id];
-                } else {
-                    el.classList.remove('locked-field');
-                    el.disabled = false;
-                    el.title = "";
-                }
+                    el.classList.add('locked-field'); el.disabled = true; el.title = "Currently being edited by " + activeLocks[id];
+                } else { el.classList.remove('locked-field'); el.disabled = false; el.title = ""; }
             });
         }
 
         // --- UTILS, WEATHER, & DATE MATH ---
-        function playSound(type) {
-            try {
-                if(type === 'check') { let a = document.getElementById('sfx-check'); a.currentTime=0; a.play(); }
-                if(type === 'msg') { let a = document.getElementById('sfx-msg'); a.currentTime=0; a.play(); }
-                if(type === 'timer') { let a = document.getElementById('sfx-timer'); a.currentTime=0; a.play(); }
-            } catch(e) {} 
-        }
+        function playSound(type) { try { if(type === 'check') { let a = document.getElementById('sfx-check'); a.currentTime=0; a.play(); } if(type === 'msg') { let a = document.getElementById('sfx-msg'); a.currentTime=0; a.play(); } if(type === 'timer') { let a = document.getElementById('sfx-timer'); a.currentTime=0; a.play(); } } catch(e) {} }
 
-        function updateClock() {
-            const tz = currentProfile === 'the1coolpop' ? 'America/Chicago' : 'Europe/Kyiv';
-            document.getElementById('clockTime').innerText = new Date().toLocaleTimeString('en-US', { timeZone: tz, hour: '2-digit', minute:'2-digit' });
+        function updateClock() { const tz = currentProfile === 'the1coolpop' ? 'America/Chicago' : 'Europe/Kyiv'; document.getElementById('clockTime').innerText = new Date().toLocaleTimeString('en-US', { timeZone: tz, hour: '2-digit', minute:'2-digit' }); }
+
+        let currentTempC = null;
+        let tempUnit = localStorage.getItem('tempUnit') || 'C';
+
+        function toggleTempUnit() {
+            tempUnit = tempUnit === 'C' ? 'F' : 'C';
+            localStorage.setItem('tempUnit', tempUnit);
+            renderWeatherTemp();
+        }
+        function renderWeatherTemp() {
+            if(currentTempC === null) return;
+            let temp = tempUnit === 'C' ? currentTempC : (currentTempC * 9/5 + 32).toFixed(1);
+            document.getElementById('tempDisplay').innerText = `${temp}°${tempUnit}`;
         }
 
         async function fetchWeather() {
@@ -688,31 +708,29 @@
                 const isOKC = currentProfile === 'the1coolpop';
                 const lat = isOKC ? 35.4676 : 50.0000;
                 const lon = isOKC ? -97.5164 : 36.2500;
-                // Fetch current AND daily forecast
                 const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`);
                 const data = await res.json();
                 
                 const code = data.current_weather.weathercode;
-                let condition = "Clear";
-                if(code <= 3) condition = "Cloudy";
-                else if(code <= 69) condition = "Rain";
-                else if(code <= 79) condition = "Snow";
+                let icon = 'fa-cloud';
+                if(code === 0) icon = 'fa-sun'; else if(code <= 3) icon = 'fa-cloud-sun'; else if(code <= 69) icon = 'fa-cloud-rain'; else if(code <= 79) icon = 'fa-snowflake';
                 
-                document.getElementById('weatherWidget').innerHTML = `<i class="fas fa-cloud"></i> ${data.current_weather.temperature}°C | ${condition}`;
+                currentTempC = data.current_weather.temperature;
+                document.getElementById('weatherWidget').innerHTML = `<i class="fas ${icon}"></i> <span id="tempDisplay"></span><button class="unit-toggle" onclick="toggleTempUnit(); event.stopPropagation();">°C/F</button>`;
+                renderWeatherTemp();
 
-                // Populate Weekly Dropdown
                 let forecastHtml = "";
                 const days =['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                 for(let i=1; i<=5; i++) {
                     let date = new Date(data.daily.time[i]);
                     let dayName = days[date.getDay()];
-                    let max = data.daily.temperature_2m_max[i];
-                    let min = data.daily.temperature_2m_min[i];
-                    let wCode = data.daily.weathercode[i];
-                    let fIcon = 'fa-cloud';
+                    let max = data.daily.temperature_2m_max[i]; let min = data.daily.temperature_2m_min[i];
+                    let wCode = data.daily.weathercode[i]; let fIcon = 'fa-cloud';
                     if(wCode === 0) fIcon = 'fa-sun'; else if(wCode <= 3) fIcon = 'fa-cloud-sun'; else if(wCode <= 69) fIcon = 'fa-cloud-rain'; else if(wCode <= 79) fIcon = 'fa-snowflake';
                     
-                    forecastHtml += `<div class="forecast-row"><span>${dayName} <i class="fas ${fIcon}"></i></span> <span>${min}° / ${max}°</span></div>`;
+                    let dispMax = tempUnit === 'C' ? max : (max * 9/5 + 32).toFixed(0);
+                    let dispMin = tempUnit === 'C' ? min : (min * 9/5 + 32).toFixed(0);
+                    forecastHtml += `<div class="forecast-row"><span>${dayName} <i class="fas ${fIcon}"></i></span> <span>${dispMin}° / ${dispMax}°</span></div>`;
                 }
                 document.getElementById('weatherDropdown').innerHTML = forecastHtml;
 
@@ -726,28 +744,14 @@
             return `${parts.find(p=>p.type==='year').value}-${parts.find(p=>p.type==='month').value}-${parts.find(p=>p.type==='day').value}`;
         }
 
-        function getCurrentDayIndex() {
-            const tz = currentProfile === 'the1coolpop' ? 'America/Chicago' : 'Europe/Kyiv';
-            return new Date(new Date().toLocaleString('en-US', { timeZone: tz })).getDay(); 
-        }
-
-        function isDateOverdue(dateString) {
-            if(!dateString) return false;
-            const todayStr = getLocalDateStr(new Date());
-            return dateString < todayStr;
-        }
-
-        // --- CALENDAR NAVIGATION (NEW) ---
+        // --- CALENDAR NAVIGATION ---
         function shiftMonth(delta) {
-            let [y, m] = currentPeriod.split('-');
+            let[y, m] = currentPeriod.split('-');
             let date = new Date(y, parseInt(m)-1 + delta, 1);
             let newStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2, '0')}`;
             changeMonth(newStr);
         }
-        function goToToday() {
-            const today = new Date();
-            changeMonth(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`);
-        }
+        function goToToday() { const today = new Date(); changeMonth(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`); }
 
         // --- FIREBASE SYNC ---
         function listenToCloud() {
@@ -756,14 +760,14 @@
                 localData = snapshot.val() || getEmptyData();
                 
                 if(!localData.globalTasks) localData.globalTasks =[];
-                ensureMonthExists(currentPeriod);
+                if(!localData.globalHabits) localData.globalHabits =[{ id: 1, name: "New Habit", logs: {} }];
+                if(!localData.finances) localData.finances = { startingAmount: 0, income:[], expenses:[] };
+                if(!localData.goals) localData.goals =[];
+
                 renderAll();
             });
 
-            db.ref('shared/locks/' + currentProfile).on('value', (snapshot) => {
-                activeLocks = snapshot.val() || {};
-                applyLocksDOM();
-            });
+            db.ref('shared/locks/' + currentProfile).on('value', (snapshot) => { activeLocks = snapshot.val() || {}; applyLocksDOM(); });
 
             db.ref('shared/chat').on('value', (snapshot) => {
                 const msgs = snapshot.val() || {};
@@ -787,33 +791,15 @@
             updateClock(); fetchWeather();
             db.ref('profiles').off(); db.ref('shared/locks').off();
             listenToCloud();
-        }
-
-        function ensureMonthExists(monthStr) {
-            if (!localData.months) localData.months = {};
-            if (!localData.months[monthStr]) {
-                localData.months[monthStr] = getEmptyMonth();
-                saveToCloud();
-            }
-            appData = localData.months[monthStr];
-            if(!appData.moods) appData.moods =["", "", "", "", "", "", ""];
-            // FIX: Ensure finances object exists properly
-            if(!appData.finances) appData.finances = { startingAmount: 0, income:[], expenses:[] };
-            if(!appData.finances.income) appData.finances.income =[];
-            if(!appData.finances.expenses) appData.finances.expenses =[];
+            if(window.innerWidth <= 768) toggleSidebar(); // Close sidebar on mobile after clicking
         }
 
         function changeMonth(newMonthStr) {
             if (!newMonthStr) return;
             let year = parseInt(newMonthStr.split('-')[0]);
-            if (year < 2000 || year > 2100) {
-                alert("SYSTEM ERROR: Year must be between 2000 and 2100.");
-                document.getElementById('monthSelector').value = currentPeriod;
-                return;
-            }
+            if (year < 2000 || year > 2100) { alert("SYSTEM ERROR: Year must be between 2000 and 2100."); document.getElementById('monthSelector').value = currentPeriod; return; }
             currentPeriod = newMonthStr;
             document.getElementById('monthSelector').value = currentPeriod;
-            ensureMonthExists(currentPeriod);
             renderAll();
         }
 
@@ -824,9 +810,11 @@
             document.getElementById(tabId).classList.add('active');
             event.currentTarget.classList.add('active');
             if(tabId === 'chat') { let chatBox = document.getElementById('chatMessages'); chatBox.scrollTop = chatBox.scrollHeight; }
+            if(window.innerWidth <= 768) toggleSidebar(); // Close sidebar on mobile
         }
 
         function renderAll() {
+            renderToday();
             renderDashboard();
             renderCalendar();
             renderTasks();
@@ -837,37 +825,77 @@
             applyLocksDOM();
         }
 
-        // --- 1. DASHBOARD ---
-        function renderDashboard() {
-            const currentDay = getCurrentDayIndex();
+        // --- 0. TODAY PAGE (NEW DEFAULT) ---
+        function renderToday() {
+            const todayStr = getLocalDateStr(new Date());
             
-            // Habits
-            if(!appData.habits) appData.habits =[];
-            document.getElementById('habitTableBody').innerHTML = appData.habits.map((habit, hIndex) => `
-                <tr>
-                    <td><input type="text" class="editable" data-lock-id="habit-${hIndex}" value="${habit.name}" onfocus="setLock('habit-${hIndex}')" onblur="appData.habits[${hIndex}].name=this.value; clearLock('habit-${hIndex}')" style="width:100%;"></td>
-                    ${habit.days.map((day, dIndex) => {
-                        let isMissed = (dIndex < currentDay) && !day;
-                        return `<td><input type="checkbox" class="${isMissed ? 'missed' : ''}" ${day ? 'checked' : ''} onchange="toggleHabit(${hIndex}, ${dIndex})"></td>`;
-                    }).join('')}
-                    <td><button class="icon-btn" onclick="appData.habits.splice(${hIndex},1); saveToCloud()"><i class="fas fa-trash"></i></button></td>
-                </tr>
-            `).join('');
+            // Render Daily Routine (Global Habits)
+            if(!localData.globalHabits) localData.globalHabits =[];
+            document.getElementById('todayHabitsList').innerHTML = localData.globalHabits.map((h, i) => {
+                let isDone = h.logs && h.logs[todayStr];
+                let lockId = `ghabit-${i}`;
+                return `
+                <li class="${isDone ? 'done' : ''}">
+                    <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTodayHabit(${i}, '${todayStr}')">
+                    <input type="text" class="task-text editable" data-lock-id="${lockId}" value="${h.name}" onfocus="setLock('${lockId}')" onblur="localData.globalHabits[${i}].name=this.value; clearLock('${lockId}')">
+                    <button class="icon-btn" style="padding:2px;" onclick="deleteGlobalHabit(${i})"><i class="fas fa-trash"></i></button>
+                </li>`;
+            }).join('');
 
-            // Moods
-            for(let i=0; i<7; i++) {
-                document.getElementById(`mood-${i}`).innerHTML = `
-                    <select style="background:transparent; border:none; font-size:16px; cursor:pointer;" onchange="appData.moods[${i}]=this.value; saveToCloud()">
-                        <option value="" ${appData.moods[i]===''?'selected':''}>➖</option>
-                        <option value="😁" ${appData.moods[i]==='😁'?'selected':''}>😁</option>
-                        <option value="😐" ${appData.moods[i]==='😐'?'selected':''}>😐</option>
-                        <option value="😡" ${appData.moods[i]==='😡'?'selected':''}>😡</option>
-                        <option value="😴" ${appData.moods[i]==='😴'?'selected':''}>😴</option>
-                    </select>
-                `;
+            // Render Today's Goal
+            let topGoal = (localData.goals||[]).find(g => !g.done);
+            document.getElementById('todayTopGoal').innerText = topGoal ? topGoal.text : "No active goals! Enjoy your day.";
+
+            // Render Task Master
+            let hideCompleted = document.getElementById('hideCompletedTasksToggle').checked;
+            let todayTasks = (localData.globalTasks||[]).map((t, index) => ({...t, origIndex: index})).filter(t => t.due === todayStr);
+            
+            // Group by category
+            let groups = {};
+            todayTasks.forEach(t => {
+                let cat = t.category || 'General';
+                if(!groups[cat]) groups[cat] = [];
+                if(!hideCompleted || !t.done) groups[cat].push(t);
+            });
+
+            let taskGroupsHtml = "";
+            for(let cat in groups) {
+                if(groups[cat].length === 0) continue;
+                let tasksHtml = groups[cat].map(t => {
+                    let lockId = `task-${t.origIndex}`;
+                    let timeStr = t.time ? `<span class="mono" style="font-size:10px; color:var(--primary); background:rgba(79, 70, 229, 0.1); padding:2px 4px; border-radius:3px; margin-right:5px;">${t.time}</span>` : '';
+                    return `
+                    <div style="display:flex; align-items:center; gap:8px; background:var(--bg-panel); padding:8px; border:1px solid var(--border-color); border-radius:4px; ${t.done ? 'opacity:0.5;' : ''}">
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleGlobalTask(${t.origIndex})">
+                        ${timeStr}
+                        <input type="text" class="task-text editable" style="${t.done ? 'text-decoration:line-through;' : ''}" data-lock-id="${lockId}" value="${t.name}" onfocus="setLock('${lockId}')" onblur="updateGlobalTaskName(${t.origIndex}, this.value); clearLock('${lockId}')">
+                    </div>`;
+                }).join('');
+                taskGroupsHtml += `<details class="task-group" open><summary>${cat} <span style="float:right; font-size:11px;">(${groups[cat].length})</span></summary><div class="group-content">${tasksHtml}</div></details>`;
             }
+            if(Object.keys(groups).length === 0) taskGroupsHtml = "<div style='padding:15px; text-align:center; color:var(--text-muted);'>No tasks for today!</div>";
+            document.getElementById('todayTaskGroups').innerHTML = taskGroupsHtml;
+        }
 
-            // UNIFIED WEEKLY GRID (Pulls from globalTasks)
+        function toggleTodayHabit(index, dateStr) {
+            if(!localData.globalHabits[index].logs) localData.globalHabits[index].logs = {};
+            let current = localData.globalHabits[index].logs[dateStr];
+            localData.globalHabits[index].logs[dateStr] = !current;
+            if(!current) playSound('check');
+            saveToCloud();
+        }
+        function addGlobalHabit() {
+            let val = document.getElementById('newHabitInput').value.trim();
+            if(!val) return;
+            if(!localData.globalHabits) localData.globalHabits =[];
+            localData.globalHabits.push({ id: Date.now(), name: val, logs: {} });
+            document.getElementById('newHabitInput').value = '';
+            saveToCloud();
+        }
+        function deleteGlobalHabit(index) { localData.globalHabits.splice(index, 1); saveToCloud(); }
+
+        // --- 1. DASHBOARD (WEEKLY) ---
+        function renderDashboard() {
             const today = new Date();
             const currentSunday = new Date(today);
             currentSunday.setDate(today.getDate() - today.getDay());
@@ -879,14 +907,12 @@
                 let colDate = new Date(currentSunday);
                 colDate.setDate(currentSunday.getDate() + i);
                 let dateStr = getLocalDateStr(colDate);
-                let isToday = i === currentDay;
+                let isToday = dateStr === getLocalDateStr(new Date());
 
-                // Find tasks for this exact date
                 let dayTasks = (localData.globalTasks||[]).map((t, index) => ({...t, origIndex: index})).filter(t => t.due === dateStr);
-                
                 let tasksHtml = dayTasks.map(t => {
                     let isMissed = (colDate < new Date().setHours(0,0,0,0)) && !t.done;
-                    let lockId = `task-${t.origIndex}`;
+                    let lockId = `wtask-${t.origIndex}`;
                     return `
                     <li class="${t.done ? 'done' : ''}">
                         <input type="checkbox" class="${isMissed ? 'missed' : ''}" ${t.done ? 'checked' : ''} onchange="toggleGlobalTask(${t.origIndex})">
@@ -906,38 +932,25 @@
             document.getElementById('weeklyGrid').innerHTML = weekHtml;
         }
 
-        function addHabit() { appData.habits.push({ name: "New Habit", days:[false,false,false,false,false,false,false] }); saveToCloud(); }
-        function toggleHabit(h, d) { appData.habits[h].days[d] = !appData.habits[h].days[d]; if(appData.habits[h].days[d]) playSound('check'); saveToCloud(); }
-
         // --- GLOBAL TASK ACTIONS ---
         function addGlobalTask(dateStr) {
             if(!localData.globalTasks) localData.globalTasks =[];
             let name = prompt("Task name:");
-            if(name) {
-                localData.globalTasks.push({ name: name, due: dateStr, priority: "medium", status: "not-started", done: false, repeat: "none" });
-                saveToCloud();
-            }
+            if(name) { localData.globalTasks.push({ name: name, category: "General", due: dateStr, time: "", priority: "medium", status: "not-started", done: false, repeat: "none" }); saveToCloud(); }
         }
         function toggleGlobalTask(index) {
             let t = localData.globalTasks[index];
-            t.done = !t.done;
-            t.status = t.done ? 'done' : 'not-started';
-            
+            t.done = !t.done; t.status = t.done ? 'done' : 'not-started';
             if(t.done) {
                 playSound('check');
-                // RECURRING LOGIC: If done, generate the next one!
                 if(t.repeat && t.repeat !== 'none') {
                     let nextDate = new Date(t.due);
                     if(t.repeat === 'daily') nextDate.setDate(nextDate.getDate() + 1);
                     if(t.repeat === 'weekly') nextDate.setDate(nextDate.getDate() + 7);
                     if(t.repeat === 'monthly') nextDate.setMonth(nextDate.getMonth() + 1);
-                    
                     let nextDateStr = getLocalDateStr(nextDate);
-                    // Check if we already made it to prevent spam
                     let exists = localData.globalTasks.find(x => x.name === t.name && x.due === nextDateStr);
-                    if(!exists) {
-                        localData.globalTasks.push({...t, due: nextDateStr, done: false, status: 'not-started', repeat: t.repeat});
-                    }
+                    if(!exists) localData.globalTasks.push({...t, due: nextDateStr, done: false, status: 'not-started'});
                 }
             }
             saveToCloud();
@@ -945,26 +958,21 @@
         function updateGlobalTaskName(index, val) { localData.globalTasks[index].name = val; saveToCloud(); }
         function deleteGlobalTask(index) { localData.globalTasks.splice(index, 1); saveToCloud(); }
 
-
         // --- 2. CHRONOS CALENDAR ---
         function renderCalendar() {
             const[year, month] = currentPeriod.split('-');
             const daysInMonth = new Date(year, month, 0).getDate();
             const firstDayIndex = new Date(year, month - 1, 1).getDay();
-            
             const todayStr = getLocalDateStr(new Date());
 
             let html = `<div class="cal-day-header">Sun</div><div class="cal-day-header">Mon</div><div class="cal-day-header">Tue</div><div class="cal-day-header">Wed</div><div class="cal-day-header">Thu</div><div class="cal-day-header">Fri</div><div class="cal-day-header">Sat</div>`;
-            
             for(let i=0; i<firstDayIndex; i++) html += `<div class="cal-box empty"></div>`;
             
             for(let d=1; d<=daysInMonth; d++) {
                 let dateString = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 let isToday = dateString === todayStr;
 
-                // Find tasks matching this date
                 let dayTasks = (localData.globalTasks||[]).map((t, index) => ({...t, origIndex: index})).filter(t => t.due === dateString);
-                
                 let tasksHtml = dayTasks.map(t => `
                     <div class="cal-task ${t.done ? 'done' : ''}" onclick="toggleGlobalTask(${t.origIndex})" title="${t.name}">
                         <div class="cal-task-name"><i class="${t.done ? 'fas fa-check-circle' : 'far fa-circle'}"></i> ${t.name}</div>
@@ -974,9 +982,7 @@
 
                 html += `
                     <div class="cal-box ${isToday ? 'today' : ''}">
-                        <div class="cal-date-row">
-                            <span class="cal-date mono">${d}</span>
-                        </div>
+                        <div class="cal-date-row"><span class="cal-date mono">${d}</span></div>
                         <div style="flex-grow:1; overflow-y:auto; max-height: 80px;">${tasksHtml}</div>
                         <div style="text-align:center; margin-top:5px;"><button class="icon-btn" style="padding:0; font-size:10px;" onclick="addGlobalTask('${dateString}')"><i class="fas fa-plus"></i></button></div>
                     </div>
@@ -985,7 +991,7 @@
             document.getElementById('calendarGrid').innerHTML = html;
         }
 
-        // --- 3. MASTER TASKS & INBOX ---
+        // --- 3. MASTER TASKS ---
         function renderTasks() {
             document.getElementById('inboxList').innerHTML = (localData.inbox||[]).map((item, i) => `
                 <li style="display:flex; justify-content:space-between; background:var(--bg-panel); padding:8px 12px; border-radius:4px; border:1px solid var(--border-color);">
@@ -1009,7 +1015,11 @@
                         <input type="text" class="editable ${isOverdue ? 'missed-text' : ''}" data-lock-id="${lockId}" value="${task.name}" style="width:100%; font-weight:600; ${task.done ? 'text-decoration:line-through;' : ''}" onfocus="setLock('${lockId}')" onblur="localData.globalTasks[${index}].name=this.value; clearLock('${lockId}')">
                     </td>
                     <td style="vertical-align: top;">
+                        <input type="text" placeholder="Category" class="editable" value="${task.category || 'General'}" onblur="localData.globalTasks[${index}].category=this.value; saveToCloud()">
+                    </td>
+                    <td style="vertical-align: top; display:flex; gap:5px;">
                         <input type="date" min="2000-01-01" value="${task.due || ''}" class="editable mono" onchange="updateTaskDate(${index}, this.value)">
+                        <input type="time" value="${task.time || ''}" class="editable mono" onchange="localData.globalTasks[${index}].time=this.value; saveToCloud()">
                     </td>
                     <td style="vertical-align: top;">
                         <select class="editable" onchange="localData.globalTasks[${index}].repeat=this.value; saveToCloud()">
@@ -1040,74 +1050,40 @@
         }
 
         function updateTaskDate(index, val) {
-            if(val && parseInt(val.split('-')[0]) < 2000) {
-                alert("SYSTEM ERROR: Year must be 2000 or greater.");
-                renderTasks(); 
-                return;
-            }
-            localData.globalTasks[index].due = val;
-            saveToCloud();
+            if(val && parseInt(val.split('-')[0]) < 2000) { alert("SYSTEM ERROR: Year must be 2000 or greater."); renderTasks(); return; }
+            localData.globalTasks[index].due = val; saveToCloud();
         }
-
-        function addInboxItem() {
-            let val = document.getElementById('inboxInput').value.trim();
-            if(!val) return;
-            if(!localData.inbox) localData.inbox =[];
-            localData.inbox.push(val);
-            document.getElementById('inboxInput').value = '';
-            saveToCloud();
-        }
-        function moveInboxToTask(i) {
-            let val = localData.inbox[i];
-            localData.inbox.splice(i,1);
-            localData.globalTasks.push({ name: val, due: "", priority: "medium", status: "not-started", done: false, repeat: "none" });
-            saveToCloud();
-        }
-        function addNewMainTask() { localData.globalTasks.push({ name: "New Task", due: "", priority: "medium", status: "not-started", done: false, repeat: "none" }); saveToCloud(); }
+        function addInboxItem() { let val = document.getElementById('inboxInput').value.trim(); if(!val) return; if(!localData.inbox) localData.inbox =[]; localData.inbox.push(val); document.getElementById('inboxInput').value = ''; saveToCloud(); }
+        function moveInboxToTask(i) { let val = localData.inbox[i]; localData.inbox.splice(i,1); localData.globalTasks.push({ name: val, category: "General", due: getLocalDateStr(new Date()), time: "", priority: "medium", status: "not-started", done: false, repeat: "none" }); saveToCloud(); }
+        function addNewGlobalTask(dateStr = "") { localData.globalTasks.push({ name: "New Task", category: "General", due: dateStr, time: "", priority: "medium", status: "not-started", done: false, repeat: "none" }); saveToCloud(); }
 
         // --- 4. FINANCES & CALCULATOR ---
         function initCharts() {
-            Chart.defaults.font.family = "'Fira Code', monospace";
-            Chart.defaults.color = '#94a3b8';
-            const pieOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } };
-            
+            Chart.defaults.font.family = "'Fira Code', monospace"; Chart.defaults.color = '#94a3b8';
+            const pieOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
             charts.incPie = new Chart(document.getElementById('incomeChart'), { type: 'doughnut', data: { labels:[], datasets: [{ data:[], backgroundColor:['#10b981', '#34d399', '#6ee7b7', '#a7f3d0'], borderWidth: 0 }] }, options: pieOpts });
-            charts.expPie = new Chart(document.getElementById('expenseChart'), { type: 'doughnut', data: { labels:[], datasets: [{ data:[], backgroundColor:['#ef4444', '#f87171', '#fca5a5', '#fecaca'], borderWidth: 0 }] }, options: pieOpts });
+            charts.expPie = new Chart(document.getElementById('expenseChart'), { type: 'doughnut', data: { labels:[], datasets:[{ data:[], backgroundColor:['#ef4444', '#f87171', '#fca5a5', '#fecaca'], borderWidth: 0 }] }, options: pieOpts });
         }
 
         let calcInput = "";
         function calcPress(val) {
-            if(val === 'C') { calcInput = ""; }
-            else if(val === '=') {
-                try { calcInput = eval(calcInput).toString(); } catch(e) { calcInput = "Error"; }
-            } else {
-                if(calcInput === "Error") calcInput = "";
-                calcInput += val;
-            }
+            if(val === 'C') { calcInput = ""; } else if(val === '=') { try { calcInput = eval(calcInput).toString(); } catch(e) { calcInput = "Error"; } } else { if(calcInput === "Error") calcInput = ""; calcInput += val; }
             document.getElementById('calcDisplay').value = calcInput;
         }
 
         function renderFinances() {
-            // FIX: Strong null checks for finances
-            if(!appData.finances) appData.finances = { startingAmount: 0, income:[], expenses:[] };
-            if(!appData.finances.income) appData.finances.income =[];
-            if(!appData.finances.expenses) appData.finances.expenses =[];
-
-            const f = appData.finances;
+            if(!localData.finances) localData.finances = { startingAmount: 0, income:[], expenses:[] };
+            const f = localData.finances;
             document.getElementById('finStart').innerText = f.startingAmount || 0;
 
             const renderTable = (type, bodyId) => {
-                document.getElementById(bodyId).innerHTML = (f[type]||[]).map((item, i) => {
-                    let lockIdSource = `fin-${type}-source-${i}`;
-                    let lockIdAmt = `fin-${type}-amt-${i}`;
-
-                    return `
+                document.getElementById(bodyId).innerHTML = (f[type]||[]).map((item, i) => `
                     <tr>
-                        <td><input type="text" class="editable" data-lock-id="${lockIdSource}" value="${item.source}" onfocus="setLock('${lockIdSource}')" onblur="appData.finances['${type}'][${i}].source=this.value; clearLock('${lockIdSource}')"></td>
-                        <td>$<input type="number" class="editable mono" data-lock-id="${lockIdAmt}" value="${item.amount}" style="width:80px;" onfocus="setLock('${lockIdAmt}')" onblur="appData.finances['${type}'][${i}].amount=parseFloat(this.value)||0; clearLock('${lockIdAmt}')"></td>
-                        <td><button class="icon-btn" onclick="appData.finances['${type}'].splice(${i},1); saveToCloud()"><i class="fas fa-trash"></i></button></td>
+                        <td><input type="text" class="editable" value="${item.source}" onblur="localData.finances['${type}'][${i}].source=this.value; saveToCloud()"></td>
+                        <td>$<input type="number" class="editable mono" value="${item.amount}" style="width:80px;" onblur="localData.finances['${type}'][${i}].amount=parseFloat(this.value)||0; saveToCloud()"></td>
+                        <td><button class="icon-btn" onclick="localData.finances['${type}'].splice(${i},1); saveToCloud()"><i class="fas fa-trash"></i></button></td>
                     </tr>
-                `}).join('');
+                `).join('');
             };
             renderTable('income', 'incomeTableBody');
             renderTable('expenses', 'expenseTableBody');
@@ -1120,79 +1096,48 @@
             document.getElementById('finExpTotal').innerText = `-$${expTotal.toFixed(2)}`;
             document.getElementById('finNetTotal').innerText = `$${net.toFixed(2)}`;
 
-            // Update Charts
-            if(charts.incPie) {
-                charts.incPie.data.labels = (f.income||[]).map(i => i.source);
-                charts.incPie.data.datasets[0].data = (f.income||[]).map(i => parseFloat(i.amount)||0);
-                charts.incPie.update();
-            }
-            if(charts.expPie) {
-                charts.expPie.data.labels = (f.expenses||[]).map(e => e.source);
-                charts.expPie.data.datasets[0].data = (f.expenses||[]).map(e => parseFloat(e.amount)||0);
-                charts.expPie.update();
-            }
+            if(charts.incPie) { charts.incPie.data.labels = (f.income||[]).map(i => i.source); charts.incPie.data.datasets[0].data = (f.income||[]).map(i => parseFloat(i.amount)||0); charts.incPie.update(); }
+            if(charts.expPie) { charts.expPie.data.labels = (f.expenses||[]).map(e => e.source); charts.expPie.data.datasets[0].data = (f.expenses||[]).map(e => parseFloat(e.amount)||0); charts.expPie.update(); }
         }
-        
-        function addFinanceRow(type) { 
-            if(!appData.finances) appData.finances = { startingAmount: 0, income:[], expenses:[] };
-            if(!appData.finances[type]) appData.finances[type]=[]; 
-            appData.finances[type].push({ source: "New", amount: 0 }); 
-            saveToCloud(); 
-        }
-        function updateFinStart(val) { 
-            if(!appData.finances) appData.finances = { startingAmount: 0, income:[], expenses:[] };
-            appData.finances.startingAmount = parseFloat(val) || 0; 
-            saveToCloud(); 
-        }
+        function addFinanceRow(type) { if(!localData.finances) localData.finances = { startingAmount: 0, income:[], expenses:[] }; if(!localData.finances[type]) localData.finances[type]=[]; localData.finances[type].push({ source: "New", amount: 0 }); saveToCloud(); }
+        function updateFinStart(val) { if(!localData.finances) localData.finances = { startingAmount: 0, income:[], expenses:[] }; localData.finances.startingAmount = parseFloat(val) || 0; saveToCloud(); }
 
         // --- 5. GOALS ---
         function renderGoals() {
-            if(!appData.goals) appData.goals =[];
-            document.getElementById('goalsTableBody').innerHTML = appData.goals.map((g, i) => {
-                let lockId = `goal-${i}`;
-                return `
+            if(!localData.goals) localData.goals =[];
+            document.getElementById('goalsTableBody').innerHTML = localData.goals.map((g, i) => `
                 <tr style="${g.done ? 'opacity: 0.5;' : ''}">
                     <td style="width: 30px;"><input type="checkbox" ${g.done ? 'checked' : ''} onchange="toggleGoal(${i})"></td>
-                    <td><input type="text" class="editable" data-lock-id="${lockId}" value="${g.text}" style="width:100%; ${g.done ? 'text-decoration:line-through;' : ''}" onfocus="setLock('${lockId}')" onblur="appData.goals[${i}].text=this.value; clearLock('${lockId}')"></td>
-                    <td style="width: 40px;"><button class="icon-btn" onclick="appData.goals.splice(${i},1); saveToCloud()"><i class="fas fa-trash"></i></button></td>
+                    <td><input type="text" class="editable" value="${g.text}" style="width:100%; ${g.done ? 'text-decoration:line-through;' : ''}" onblur="localData.goals[${i}].text=this.value; saveToCloud()"></td>
+                    <td style="width: 40px;"><button class="icon-btn" onclick="localData.goals.splice(${i},1); saveToCloud()"><i class="fas fa-trash"></i></button></td>
                 </tr>
-            `}).join('');
+            `).join('');
         }
-        function addGoal() { appData.goals.push({ text: "New Goal", done: false }); saveToCloud(); }
-        function toggleGoal(i) { appData.goals[i].done = !appData.goals[i].done; if(appData.goals[i].done) playSound('check'); saveToCloud(); }
+        function addGoal() { if(!localData.goals) localData.goals=[]; localData.goals.push({ text: "New Goal", done: false }); saveToCloud(); }
+        function toggleGoal(i) { localData.goals[i].done = !localData.goals[i].done; if(localData.goals[i].done) playSound('check'); saveToCloud(); }
 
         function renderCoopGoal() {
-            let cg = localData.coopGoal;
-            if(!cg) return;
-            document.getElementById('coopGoalName').value = cg.name;
-            document.getElementById('coopProgressText').innerText = `${cg.progress} / ${cg.max}`;
-            let p = Math.min(100, (cg.progress / cg.max) * 100);
-            document.getElementById('coopBarFill').style.width = `${p}%`;
+            let cg = localData.coopGoal; if(!cg) return;
+            document.getElementById('coopGoalName').value = cg.name; document.getElementById('coopProgressText').innerText = `${cg.progress} / ${cg.max}`;
+            let p = Math.min(100, (cg.progress / cg.max) * 100); document.getElementById('coopBarFill').style.width = `${p}%`;
         }
         function updateCoopGoal(field, val) { localData.coopGoal[field] = val; saveToCloud(); }
         function addCoopProgress(amt) { localData.coopGoal.progress += amt; if(localData.coopGoal.progress < 0) localData.coopGoal.progress = 0; saveToCloud(); }
 
         // --- 6. VAULT ---
         function renderVault() {
-            document.getElementById('vaultTableBody').innerHTML = (localData.vault||[]).map((v, i) => {
-                let lockIdT = `vault-t-${i}`;
-                let lockIdU = `vault-u-${i}`;
-                return `
+            document.getElementById('vaultTableBody').innerHTML = (localData.vault||[]).map((v, i) => `
                 <tr>
-                    <td><input type="text" class="editable" data-lock-id="${lockIdT}" value="${v.title}" onfocus="setLock('${lockIdT}')" onblur="localData.vault[${i}].title=this.value; clearLock('${lockIdT}')"></td>
-                    <td>
-                        <input type="text" class="editable" data-lock-id="${lockIdU}" value="${v.url}" style="width:70%;" onfocus="setLock('${lockIdU}')" onblur="localData.vault[${i}].url=this.value; clearLock('${lockIdU}')">
-                        <a href="${v.url}" target="_blank" style="margin-left:10px; color:var(--primary); font-weight:bold;">Open <i class="fas fa-external-link-alt"></i></a>
-                    </td>
+                    <td><input type="text" class="editable" value="${v.title}" onblur="localData.vault[${i}].title=this.value; saveToCloud()"></td>
+                    <td><input type="text" class="editable" value="${v.url}" style="width:70%;" onblur="localData.vault[${i}].url=this.value; saveToCloud()"> <a href="${v.url}" target="_blank" style="margin-left:10px; color:var(--primary); font-weight:bold;">Open <i class="fas fa-external-link-alt"></i></a></td>
                     <td><button class="icon-btn" onclick="localData.vault.splice(${i},1); saveToCloud()"><i class="fas fa-trash"></i></button></td>
                 </tr>
-            `}).join('');
+            `).join('');
         }
         function addVaultLink() { if(!localData.vault) localData.vault=[]; localData.vault.push({title:"New Resource", url:"https://"}); saveToCloud(); }
 
         // --- 7. CHAT ---
         function deleteChatMessage(key) { db.ref('shared/chat/' + key).update({ isDeleted: true }); }
-
         function parseMessageText(text) {
             let safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
             const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
@@ -1201,56 +1146,28 @@
             if(imgRegex.test(safeText)) return safeText.replace(imgRegex, '<br><img src="$1" alt="Image">');
             return safeText;
         }
-
         function renderChat(messages) {
             const chatBox = document.getElementById('chatMessages');
             const isScrolledToBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 50;
-
             chatBox.innerHTML = messages.map(msg => {
                 const isMe = msg.sender === myIdentity; 
                 const pfpColor = msg.sender === 'the1coolpop' ? '4f46e5' : 'f59e0b';
                 const pfpUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.sender}&backgroundColor=${pfpColor}`;
-                
                 if(msg.isDeleted) {
-                    return `
-                    <div class="chat-msg ${isMe ? 'me' : ''}">
-                        <img src="${pfpUrl}" class="chat-pfp" style="opacity:0.3;">
-                        <div>
-                            <div class="chat-sender" style="text-align: ${isMe ? 'right' : 'left'}; opacity:0.3;">${msg.sender}</div>
-                            <div class="chat-bubble" style="background:transparent; border: 1px dashed var(--border-color);"><div class="chat-text msg-deleted">🚫 Message removed by ${msg.sender}</div></div>
-                        </div>
-                    </div>`;
+                    return `<div class="chat-msg ${isMe ? 'me' : ''}"><img src="${pfpUrl}" class="chat-pfp" style="opacity:0.3;"><div><div class="chat-sender" style="text-align: ${isMe ? 'right' : 'left'}; opacity:0.3;">${msg.sender}</div><div class="chat-bubble" style="background:transparent; border: 1px dashed var(--border-color);"><div class="chat-text msg-deleted">🚫 Message removed by ${msg.sender}</div></div></div></div>`;
                 }
-
-                return `
-                <div class="chat-msg ${isMe ? 'me' : ''}">
-                    <img src="${pfpUrl}" class="chat-pfp" alt="PFP">
-                    <div>
-                        <div class="chat-sender" style="text-align: ${isMe ? 'right' : 'left'};">${msg.sender}</div>
-                        <div class="chat-bubble">
-                            <div class="chat-text">${parseMessageText(msg.text)}</div>
-                            ${isMe ? `<button class="icon-btn" style="padding:0; margin-top:5px; font-size:10px; float:right;" onclick="deleteChatMessage('${msg.key}')"><i class="fas fa-trash"></i></button>` : ''}
-                        </div>
-                    </div>
-                </div>
-                `;
+                return `<div class="chat-msg ${isMe ? 'me' : ''}"><img src="${pfpUrl}" class="chat-pfp" alt="PFP"><div><div class="chat-sender" style="text-align: ${isMe ? 'right' : 'left'};">${msg.sender}</div><div class="chat-bubble"><div class="chat-text">${parseMessageText(msg.text)}</div>${isMe ? `<button class="icon-btn" style="padding:0; margin-top:5px; font-size:10px; float:right;" onclick="deleteChatMessage('${msg.key}')"><i class="fas fa-trash"></i></button>` : ''}</div></div></div>`;
             }).join('');
-
             if(isScrolledToBottom) chatBox.scrollTop = chatBox.scrollHeight;
         }
-
         function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
+            const input = document.getElementById('chatInput'); const text = input.value.trim();
             if(!text) return;
             db.ref('shared/chat').push().set({ sender: myIdentity, text: text, timestamp: firebase.database.ServerValue.TIMESTAMP, isDeleted: false });
-            input.value = '';
-            setTimeout(() => { let chatBox = document.getElementById('chatMessages'); chatBox.scrollTop = chatBox.scrollHeight; }, 100);
+            input.value = ''; setTimeout(() => { let chatBox = document.getElementById('chatMessages'); chatBox.scrollTop = chatBox.scrollHeight; }, 100);
         }
-
         function handleChatKeyPress(e) { if(e.key === 'Enter') sendChatMessage(); }
         function handleTyping() { if(myIdentity) db.ref('shared/typing/' + myIdentity).set(Date.now()); }
-
     </script>
 </body>
 </html>
