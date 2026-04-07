@@ -1445,7 +1445,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 // ============================================================
 let lastMouseUpdate=0;
 function handleGhostCursor(e){
-    if(!myIdentity||Date.now()-lastMouseUpdate<50)return;
+    if(!myIdentity||Date.now()-lastMouseUpdate<150)return;
     lastMouseUpdate=Date.now();
     dbUpsert('shared_presence',{id:myIdentity,x:e.clientX/window.innerWidth,y:e.clientY/window.innerHeight,profile:currentProfile,tab:currentTab,updated_at:Date.now()});
 }
